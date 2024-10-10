@@ -4,8 +4,8 @@
     {
         public int DocumentID { get; set; }
         public DateTime UploaddDate { get; set; }
-        public String FileName { get; set; }
-        public String FilePath { get; set; }
+        public string FileName { get; set; }
+        public string FilePath { get; set; }
         public int ClaimID { get; set; }
     }
 }
