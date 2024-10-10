@@ -6,6 +6,6 @@
         public string LecturerName { get; set; }
         public string LecturerSurname { get; set; }
         public string LecturerEmail { get; set; }
-        public string LecturerHourly { get; set; }
+        public decimal HourlyRate { get; set; }
     }
 }
