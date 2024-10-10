@@ -7,4 +7,11 @@
     <RootNamespace>Contract_Monthly_Claim_System</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Content Update="Views\Home\Submit.cshtml">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>
