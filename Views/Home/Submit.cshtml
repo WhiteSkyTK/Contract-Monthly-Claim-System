@@ -1,8 +1,125 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Submit Claims";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<!-- Lecturer Info (Name, Surname, Phone, Email) -->
+<div class="lecturer-info">
+    @if (User.Identity.IsAuthenticated)
+    {
+        <h2>Welcome, @User.Identity.Name!</h2>
+        <p><strong>Phone:</strong> 083-123-4567</p> <!-- Placeholder phone number -->
+        <p><strong>Email:</strong> @(@User.Identity.Name.ToLower() + "@example.com")</p>
+    }
+    else
+    {
+        <h2>Welcome, Guest!</h2>
+        <p>Please log in to submit your claims.</p>
+    }
 </div>
+
+<!-- Form for submitting claims -->
+<form asp-action="SubmitClaims" method="post" enctype="multipart/form-data">
+    <!-- Module selection dropdown (PROG6212, DATA6222, HCIN6221) -->
+    <div class="form-group">
+        <label for="Module">Select Module</label>
+        <select multiple class="form-control" id="Module" name="Module">
+            <option value="PROG6212">PROG6212</option>
+            <option value="DATA6222">DATA6222</option>
+            <option value="HCIN6221">HCIN6221</option>
+        </select>
+        <small class="form-text text-muted">You can select multiple modules.</small>
+    </div>
+
+    <!-- Hours Worked -->
+    <div class="form-group">
+        <label for="HoursWorked">Hours Worked</label>
+        <input type="number" class="form-control" id="HoursWorked" name="HoursWorked" min="1" max="200" required>
+    </div>
+
+    <!-- Hourly Rate in Rands -->
+    <div class="form-group">
+        <label for="HourlyRate">Hourly Rate (R)</label>
+        <input type="number" class="form-control" id="HourlyRate" name="HourlyRate" step="0.01" value="0.00" min="50" max="1000" required>
+    </div>
+
+    <!-- Additional Notes -->
+    <div class="form-group">
+        <label for="AdditionalNotes">Additional Notes</label>
+        <textarea class="form-control" id="AdditionalNotes" name="AdditionalNotes" rows="3"></textarea>
+    </div>
+
+    <!-- File Upload for Supporting Documents -->
+    <div class="form-group">
+        <label for="SupportingDocuments">Upload Supporting Document</label>
+        <input type="file" class="form-control-file" id="SupportingDocuments" name="SupportingDocuments" accept=".pdf, .docx, .xlsx" required>
+        <small class="form-text text-muted">Accepted formats: PDF, DOCX, XLSX. Max size: 5MB.</small>
+        <div id="fileNameDisplay"></div> <!-- Display uploaded file name -->
+    </div>
+
+    <!-- Submit Button -->
+    <button type="submit" class="btn btn-primary submit-btn">Submit Claim</button>
+</form>
+
+<!-- Custom styles for better UI -->
+<style>
+    .lecturer-info {
+        background-color: #f1f1f1;
+        padding: 1rem;
+        border-radius: 10px;
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+
+        .lecturer-info h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.75rem;
+            color: #333;
+        }
+
+    .form-group {
+        margin-bottom: 1rem;
+    }
+
+    .form-control,
+    .form-control-file {
+        padding: 0.75rem;
+        border-radius: 5px;
+        font-family: 'Open Sans', sans-serif;
+    }
+
+    .submit-btn {
+        background-color: #007bff;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 5px;
+        font-size: 1.1rem;
+        font-family: 'Montserrat', sans-serif;
+        transition: background-color 0.3s;
+        display: block;
+        width: 100%;
+        cursor: pointer;
+    }
+
+        .submit-btn:hover {
+            background-color: #0056b3;
+        }
+</style>
+
+<!-- JavaScript for file upload validation and name display -->
+<script>
+    document.getElementById('SupportingDocuments').addEventListener('change', function () {
+        const fileInput = this;
+        const fileNameDisplay = document.getElementById('fileNameDisplay');
+        const file = fileInput.files[0];
+
+        if (file) {
+            if (file.size > 5242880) { // 5MB size limit
+                alert("File size exceeds 5MB. Please upload a smaller file.");
+                fileInput.value = ""; // Clear the input
+                fileNameDisplay.innerHTML = "";
+            } else {
+                fileNameDisplay.innerHTML = "File uploaded: " + file.name;
+            }
+        }
+    });
+</script>
