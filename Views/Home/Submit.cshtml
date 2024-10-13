@@ -19,14 +19,21 @@
 
 <!-- Form for submitting claims -->
 <form asp-action="SubmitClaims" method="post" enctype="multipart/form-data">
-    <!-- Module selection dropdown (PROG6212, DATA6222, HCIN6221) -->
+    <!-- Module selection with checkboxes -->
     <div class="form-group">
-        <label for="Module">Select Module</label>
-        <select multiple class="form-control" id="Module" name="Module">
-            <option value="PROG6212">PROG6212</option>
-            <option value="DATA6222">DATA6222</option>
-            <option value="HCIN6221">HCIN6221</option>
-        </select>
+        <label>Select Module</label>
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="Module" value="PROG6212" id="module1">
+            <label class="form-check-label" for="module1">PROG6212</label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="Module" value="DATA6222" id="module2">
+            <label class="form-check-label" for="module2">DATA6222</label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="Module" value="HCIN6221" id="module3">
+            <label class="form-check-label" for="module3">HCIN6221</label>
+        </div>
         <small class="form-text text-muted">You can select multiple modules.</small>
     </div>
 
@@ -88,7 +95,7 @@
     }
 
     .submit-btn {
-        background-color: #007bff;
+        background-color: #DE1B38;
         color: white;
         padding: 0.75rem 1.5rem;
         border-radius: 5px;
@@ -101,7 +108,7 @@
     }
 
         .submit-btn:hover {
-            background-color: #0056b3;
+            background-color: #87071a;
         }
 </style>
 
