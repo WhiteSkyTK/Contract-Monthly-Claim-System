@@ -45,34 +45,7 @@ namespace Contract_Monthly_Claim_System.Context
                 .HasForeignKey(a => a.ClaimID)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Seeding data for the Lecturer table
-            modelBuilder.Entity<Lecturer>().HasData(
-                new Lecturer { LecturerID = 1, LecturerName = "John", LecturerSurname = "Doe", LecturerPhone = "083-123-4567", LecturerEmail = "john.doe@example.com" }
-            );
-
-            // Seeding data for the Claims table
-            modelBuilder.Entity<Claims>().HasData(
-                new Claims { ClaimID = 1, LecturerID = 1, Module = "PROG6212", HoursWorked = 10, HourlyRate = 100, AdditionalNotes = "Worked on project.", CoordinatorID = 1, Status = "Pending" }
-            );
-
-            // Seeding data for the ProgrammeCoordinator table first
-            modelBuilder.Entity<ProgrammeCoordintor>().HasData(
-                new ProgrammeCoordintor { CoordinatorID = 1, CoordintorName = "Alice", CoordintorSurname = "Smith", CoordintorEmail = "Alicesmith@gmail.com" }
-            );
-
-            // Seeding data for the AcademicManager table
-            modelBuilder.Entity<AcademicManager>().HasData(
-                new AcademicManager { ManagerID = 1, ManagerName = "Bob", ManagerSurname = "Brown", ManagerEmail = "Bobrown@gmail.com" }
-            );
-
-            // Seeding data for the ApprovalProcess table
-            modelBuilder.Entity<ApprovalProcess>().HasData(
-                new ApprovalProcess { ApprovalID = 1, ClaimID = 1, ApprovalStatus = "Pending", ApprovalDate = DateTime.Now, CoordinatorID = 1, ManagerID = 1 }
-            );
-
-            // Add seeding for other tables/models similarly...
-
-            // Apply similar logic for other entities that may cause cascade issues
+            
         }
 
 

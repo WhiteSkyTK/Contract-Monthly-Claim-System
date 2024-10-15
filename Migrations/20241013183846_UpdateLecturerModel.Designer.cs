@@ -4,6 +4,7 @@ using Contract_Monthly_Claim_System.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Contract_Monthly_Claim_System.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241013183846_UpdateLecturerModel")]
+    partial class UpdateLecturerModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -94,7 +97,7 @@ namespace Contract_Monthly_Claim_System.Migrations
                         new
                         {
                             ApprovalID = 1,
-                            ApprovalDate = new DateTime(2024, 10, 13, 20, 44, 47, 165, DateTimeKind.Local).AddTicks(86),
+                            ApprovalDate = new DateTime(2024, 10, 13, 20, 38, 45, 592, DateTimeKind.Local).AddTicks(8352),
                             ApprovalStatus = "Pending",
                             ClaimID = 1,
                             CoordinatorID = 1,
