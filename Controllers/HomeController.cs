@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
+using Microsoft.EntityFrameworkCore; // Don't forget to include this for EF Core
 
 namespace Contract_Monthly_Claim_System.Controllers
 {
@@ -30,9 +31,20 @@ namespace Contract_Monthly_Claim_System.Controllers
             return View();
         }
 
+        // Change Track to TrackClaims to retrieve claims
+        public async Task<IActionResult> TrackClaims()
+        {
+            var claims = await _context.Claims
+                .Include(c => c.Lecturer) // Include lecturer info if needed
+                .ToListAsync();
+
+            return View(claims);
+        }
+
+        // Change this method to redirect to TrackClaims
         public IActionResult Track()
         {
-            return View();
+            return RedirectToAction("TrackClaims");
         }
 
         public IActionResult Submit()
@@ -48,7 +60,7 @@ namespace Contract_Monthly_Claim_System.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult SubmitClaims(Claims claim, IFormFile SupportingDocuments)
+        public async Task<IActionResult> SubmitClaimsAsync(Claims claim, IFormFile SupportingDocuments)
         {
             if (ModelState.IsValid)
             {
@@ -75,9 +87,9 @@ namespace Contract_Monthly_Claim_System.Controllers
 
                     // Add the claim to the database
                     _context.Claims.Add(claim);
-                    _context.SaveChanges();
+                    await _context.SaveChangesAsync(); // Use async save
 
-                    return RedirectToAction("Track"); // Redirect to a tracking or confirmation page
+                    return RedirectToAction("TrackClaims"); // Redirect to the tracking page
                 }
                 else
                 {
@@ -89,7 +101,6 @@ namespace Contract_Monthly_Claim_System.Controllers
             // If validation fails or other issues, return the same view
             return View(claim);
         }
-
 
         // POST: Register (Handles form submission)
         [HttpPost]
