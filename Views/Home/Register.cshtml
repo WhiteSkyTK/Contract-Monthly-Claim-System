@@ -1,0 +1,112 @@
+﻿@model Contract_Monthly_Claim_System.Models.Lecturer;
+@{
+    ViewData["Title"] = "Register Page";
+}
+
+<!-- Centered container for the registration form -->
+<div class="register-container">
+    <div class="register-box">
+        <h1 class="register-title">Create an Account</h1>
+        <p class="register-subtitle">Please fill in the details to create a new lecturer account</p>
+
+        <!-- Registration Form -->
+        <form asp-action="Register" method="post">
+            <!-- Name input -->
+            <div class="form-group">
+                <label for="Name">Name</label>
+                <input asp-for="LecturerName" class="form-control" placeholder="Enter your name" required>
+                <span asp-validation-for="LecturerName" class="text-danger"></span>
+            </div>
+
+            <!-- Surname input -->
+            <div class="form-group">
+                <label for="Surname">Surname</label>
+                <input asp-for="LecturerSurname" class="form-control" placeholder="Enter your surname" required>
+                <span asp-validation-for="LecturerSurname" class="text-danger"></span>
+            </div>
+
+            <!-- Phone number input -->
+            <div class="form-group">
+                <label for="PhoneNumber">Phone Number</label>
+                <input asp-for="LecturerPhone" class="form-control" placeholder="Enter your phone number" required>
+                <span asp-validation-for="LecturerPhone" class="text-danger"></span>
+            </div>
+
+            <!-- Email input -->
+            <div class="form-group">
+                <label for="Email">Email</label>
+                <input asp-for="LecturerEmail" class="form-control" placeholder="Enter your email" required>
+                <span asp-validation-for="LecturerEmail" class="text-danger"></span>
+            </div>
+
+            <!-- Password input -->
+            <div class="form-group">
+                <label for="Password">Password</label>
+                <input asp-for="LecturerPassword" type="password" class="form-control" placeholder="Enter your password" required>
+                <span asp-validation-for="LecturerPassword" class="text-danger"></span>
+            </div>
+
+
+            <!-- Submit button -->
+            <button type="submit" class="btn btn-primary register-btn">Register</button>
+        </form>
+
+    </div>
+</div>
+
+<!-- Custom styles for the registration page -->
+<style>
+    .register-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #f7f9fc; /* Adjust background color to match the theme */
+    }
+
+    .register-box {
+        background-color: #ffffff;
+        padding: 2rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        max-width: 400px;
+        width: 100%;
+        text-align: center;
+    }
+
+    .register-title {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 2rem;
+        color: #333333;
+    }
+
+    .register-subtitle {
+        font-family: 'Open Sans', sans-serif;
+        color: #666666;
+        margin-bottom: 2rem;
+    }
+
+    .form-control {
+        border: 1px solid #dddddd;
+        padding: 0.75rem;
+        margin-bottom: 1rem;
+        border-radius: 5px;
+        font-family: 'Open Sans', sans-serif;
+    }
+
+    .register-btn {
+        background-color: #DE1B38;
+        color: #ffffff;
+        border: none;
+        padding: 0.75rem 2rem;
+        font-size: 1rem;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        width: 100%;
+    }
+
+        .register-btn:hover {
+            background-color: #87071a;
+        }
+</style>

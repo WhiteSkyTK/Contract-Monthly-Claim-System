@@ -7,20 +7,20 @@ namespace Contract_Monthly_Claim_System.Models
     {
         [Key]
         public int LecturerID { get; set; }
+        [Required]
         public string LecturerName { get; set; }
+        [Required]
         public string LecturerSurname { get; set; }
+        [Required]
         public string LecturerPhone { get; set; }
+        [Required]
         public string LecturerEmail { get; set; }
-        [Column(TypeName = "decimal(18,2)")] // Specify precision and scale
-        public decimal HourlyRate { get; set; }
+        [Required]
+        public string LecturerPassword { get; set; }
 
-        // Navigation property to Claims
+        // Navigation properties (if needed)
         public ICollection<Claims> Claims { get; set; }
-
-        // Navigation property to Module
         public ICollection<Module> Modules { get; set; }
-
-        // Navigation property to LecturerModules
         public ICollection<LecturerModules> LecturerModules { get; set; } = new List<LecturerModules>();
     }
 }
