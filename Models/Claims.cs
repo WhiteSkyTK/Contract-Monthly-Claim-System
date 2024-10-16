@@ -37,8 +37,7 @@ namespace Contract_Monthly_Claim_System.Models
         public AcademicManager Manager { get; set; }
 
         // Relationship to approval process
-        public ICollection<ApprovalProcess> ApprovalProcesses { get; set; }
+        public ICollection<ApprovalProcess> ApprovalProcesses { get; set; } = new List<ApprovalProcess>();
     }
-
 }
 

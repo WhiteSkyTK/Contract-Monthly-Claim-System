@@ -1,8 +1,82 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model IEnumerable<Contract_Monthly_Claim_System.Models.Claims>
+
+@{
+    ViewData["Title"] = "Track Claims";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container">
+    <h1 class="text-center">Track Your Claims</h1>
+
+    <div class="row">
+        @if (Model != null && Model.Any())
+        {
+            foreach (var claim in Model)
+            {
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Claim ID: @claim.ClaimID</h5>
+                            <p><strong>Module:</strong> @claim.Module</p>
+                            <p><strong>Hours Worked:</strong> @claim.HoursWorked</p>
+                            <p><strong>Hourly Rate:</strong> R@claim.HourlyRate</p>
+                            <p><strong>Status:</strong> <span class="status-text">@claim.Status</span></p>
+                            <div class="progress">
+                                <div class="progress-bar @GetProgressBarClass(claim.Status)" role="progressbar" style="width: @(GetProgressPercentage(claim.Status))%" aria-valuenow="@GetProgressPercentage(claim.Status)" aria-valuemin="0" aria-valuemax="100">
+                                    @claim.Status
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12">
+                <div class="alert alert-info" role="alert">
+                    No claims found. Please submit your claims to track their status.
+                </div>
+            </div>
+        }
+    </div>
 </div>
+
+@functions {
+    private string GetProgressBarClass(string status)
+    {
+        return status switch
+        {
+            "Pending" => "bg-warning",
+            "Approved" => "bg-success",
+            "Rejected" => "bg-danger",
+            _ => "bg-secondary"
+        };
+    }
+
+    private int GetProgressPercentage(string status)
+    {
+        return status switch
+        {
+            "Pending" => 50,
+            "Approved" => 100,
+            "Rejected" => 0,
+            _ => 0
+        };
+    }
+}
+
+<style>
+    .status-text {
+        font-weight: bold;
+    }
+
+    .progress {
+        height: 1.5rem;
+        margin-top: 0.5rem;
+    }
+
+    .card {
+        border: 1px solid #DE1B38;
+        border-radius: 10px;
+    }
+</style>

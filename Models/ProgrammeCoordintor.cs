@@ -9,6 +9,7 @@ namespace Contract_Monthly_Claim_System.Models
         public string CoordintorName { get; set; }
         public string CoordintorSurname { get; set; }
         public string CoordintorEmail { get; set; }
+        public string CoordintorPhone { get; set; }
 
         // Navigation property to Claims
         public ICollection<Claims> Claims { get; set; }
