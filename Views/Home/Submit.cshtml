@@ -1,14 +1,14 @@
-﻿@{
+﻿@model Contract_Monthly_Claim_System.Models.Claims
+@{
     ViewData["Title"] = "Submit Claims";
 }
 
-<!-- Lecturer Info (Name, Surname, Phone, Email) -->
 <div class="lecturer-info">
     @if (User.Identity.IsAuthenticated)
     {
         <h2>Welcome, @User.Identity.Name!</h2>
-        <p><strong>Phone:</strong> 083-123-4567</p> <!-- Placeholder phone number -->
-        <p><strong>Email:</strong> @(@User.Identity.Name.ToLower() + "@example.com")</p>
+        <p><strong>Phone:</strong> 083-123-4567</p> <!-- Placeholder for phone number -->
+        <p><strong>Email:</strong> @User.Identity.Name</p> <!-- Display lecturer email -->
     }
     else
     {
@@ -17,9 +17,7 @@
     }
 </div>
 
-<!-- Form for submitting claims -->
 <form asp-action="SubmitClaims" method="post" enctype="multipart/form-data">
-    <!-- Module selection with checkboxes -->
     <div class="form-group">
         <label>Select Module</label>
         <div class="form-check">
@@ -37,35 +35,49 @@
         <small class="form-text text-muted">You can select multiple modules.</small>
     </div>
 
-    <!-- Hours Worked -->
     <div class="form-group">
         <label for="HoursWorked">Hours Worked</label>
         <input type="number" class="form-control" id="HoursWorked" name="HoursWorked" min="1" max="200" required>
     </div>
 
-    <!-- Hourly Rate in Rands -->
     <div class="form-group">
         <label for="HourlyRate">Hourly Rate (R)</label>
         <input type="number" class="form-control" id="HourlyRate" name="HourlyRate" step="0.01" value="0.00" min="50" max="1000" required>
     </div>
 
-    <!-- Additional Notes -->
     <div class="form-group">
         <label for="AdditionalNotes">Additional Notes</label>
         <textarea class="form-control" id="AdditionalNotes" name="AdditionalNotes" rows="3"></textarea>
     </div>
 
-    <!-- File Upload for Supporting Documents -->
     <div class="form-group">
         <label for="SupportingDocuments">Upload Supporting Document</label>
         <input type="file" class="form-control-file" id="SupportingDocuments" name="SupportingDocuments" accept=".pdf, .docx, .xlsx" required>
         <small class="form-text text-muted">Accepted formats: PDF, DOCX, XLSX. Max size: 5MB.</small>
-        <div id="fileNameDisplay"></div> <!-- Display uploaded file name -->
+        <div id="fileNameDisplay"></div>
     </div>
 
-    <!-- Submit Button -->
     <button type="submit" class="btn btn-primary submit-btn">Submit Claim</button>
 </form>
+
+<script>
+    document.getElementById('SupportingDocuments').addEventListener('change', function () {
+        const fileInput = this;
+        const fileNameDisplay = document.getElementById('fileNameDisplay');
+        const file = fileInput.files[0];
+
+        if (file) {
+            if (file.size > 5242880) {
+                alert("File size exceeds 5MB. Please upload a smaller file.");
+                fileInput.value = "";
+                fileNameDisplay.innerHTML = "";
+            } else {
+                fileNameDisplay.innerHTML = "File uploaded: " + file.name;
+            }
+        }
+    });
+</script>
+
 
 <!-- Custom styles for better UI -->
 <style>
@@ -111,22 +123,3 @@
             background-color: #87071a;
         }
 </style>
-
-<!-- JavaScript for file upload validation and name display -->
-<script>
-    document.getElementById('SupportingDocuments').addEventListener('change', function () {
-        const fileInput = this;
-        const fileNameDisplay = document.getElementById('fileNameDisplay');
-        const file = fileInput.files[0];
-
-        if (file) {
-            if (file.size > 5242880) { // 5MB size limit
-                alert("File size exceeds 5MB. Please upload a smaller file.");
-                fileInput.value = ""; // Clear the input
-                fileNameDisplay.innerHTML = "";
-            } else {
-                fileNameDisplay.innerHTML = "File uploaded: " + file.name;
-            }
-        }
-    });
-</script>

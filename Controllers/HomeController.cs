@@ -46,6 +46,51 @@ namespace Contract_Monthly_Claim_System.Controllers
             return View();
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult SubmitClaims(Claims claim, IFormFile SupportingDocuments)
+        {
+            if (ModelState.IsValid)
+            {
+                // Associate the current logged-in lecturer with the claim
+                var lecturer = _context.Lecturers.SingleOrDefault(l => l.LecturerEmail == User.Identity.Name);
+                if (lecturer != null)
+                {
+                    claim.LecturerID = lecturer.LecturerID;
+                    claim.SubmissionDate = DateTime.Now;
+                    claim.Status = "Pending"; // Default status when claim is submitted
+
+                    // Handle file upload if there's a supporting document
+                    if (SupportingDocuments != null && SupportingDocuments.Length > 0)
+                    {
+                        // Save the file, e.g., to wwwroot/uploads or a database
+                        var filePath = Path.Combine("wwwroot/uploads", SupportingDocuments.FileName);
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            SupportingDocuments.CopyTo(stream);
+                        }
+
+                        // You can store the file path or any additional info if needed
+                    }
+
+                    // Add the claim to the database
+                    _context.Claims.Add(claim);
+                    _context.SaveChanges();
+
+                    return RedirectToAction("Track"); // Redirect to a tracking or confirmation page
+                }
+                else
+                {
+                    // If no lecturer is found (unexpected case)
+                    ModelState.AddModelError("", "Lecturer not found. Please log in.");
+                }
+            }
+
+            // If validation fails or other issues, return the same view
+            return View(claim);
+        }
+
+
         // POST: Register (Handles form submission)
         [HttpPost]
         [ValidateAntiForgeryToken]
