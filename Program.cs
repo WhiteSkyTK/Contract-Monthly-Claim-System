@@ -17,8 +17,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        options.LoginPath = "/Account/Login"; // Adjust accordingly
-        options.LogoutPath = "/Account/Logout"; // Adjust accordingly
+        options.LoginPath = "/Home/Login"; // Set the login path
+        options.LogoutPath = "/Home/Logout"; // Set the logout path
     });
 
 var app = builder.Build();

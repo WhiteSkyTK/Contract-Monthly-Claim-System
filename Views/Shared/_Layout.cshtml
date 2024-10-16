@@ -4,12 +4,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Contract Monthly Claim System</title>
-    <!-- Google Fonts for modern typography -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-
-    <!-- Bootstrap and Custom Styles -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
     <style>
         /* General Styles */
         body {
@@ -26,7 +24,7 @@
         }
 
         .navbar-brand {
-            color: White;
+            color: white;
             font-size: 26px;
             font-weight: 600;
             transition: color 0.3s ease;
@@ -37,7 +35,7 @@
             }
 
         .nav-link {
-            color: White;
+            color: white;
             font-weight: 500;
             margin-right: 20px;
             transition: color 0.3s ease;
@@ -64,14 +62,14 @@
         }
 
         .profile-circle {
-            background-color: #333333; /* Gray background for profile circle */
+            background-color: #333333;
             font-size: 16px;
             text-transform: uppercase;
+            cursor: pointer;
         }
 
-            .navbar-btn:hover {
+            .profile-circle:hover {
                 background-color: #bf162f;
-                transform: scale(1.05);
             }
 
         /* Footer Styles */
@@ -115,20 +113,26 @@
                         <li class="nav-item">
                             <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Track">Track Status</a>
                         </li>
-                        <li class="nav-item">
+                        <li class="nav-item dropdown">
                             @if (User.Identity.IsAuthenticated)
                             {
-                                // Directly use the code without '@{}'
                                 var nameParts = User.Identity.Name.Split(' ');
                                 var initials = nameParts.Length >= 2 ? $"{nameParts[0][0]}{nameParts[1][0]}" : $"{nameParts[0][0]}";
 
-                                <div class="profile-circle">
+                                <a class="profile-circle dropdown-toggle" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     @initials
-                                </div>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                                    <li>
+                                        <form asp-area="" asp-controller="Home" asp-action="Logout" method="post">
+                                            <button type="submit" class="dropdown-item">Logout</button>
+                                        </form>
+                                    </li>
+                                </ul>
                             }
                             else
                             {
-                                <a class="navbar-btn" asp-controller="Home" asp-action="Login">Login</a>
+                                <button class="btn btn-primary" onclick="window.location.href='@Url.Action("Login", "Home")'">Log In</button>
                             }
                         </li>
                     </ul>

@@ -10,10 +10,12 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 
 namespace Contract_Monthly_Claim_System.Controllers
 {
+   
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
@@ -25,6 +27,12 @@ namespace Contract_Monthly_Claim_System.Controllers
             _logger = logger;
             _context = context;
         }
+
+        public IActionResult Login()
+        {
+            return View();
+        }
+
 
         public async Task<IActionResult> Index()
         {
@@ -72,9 +80,6 @@ namespace Contract_Monthly_Claim_System.Controllers
             return View(model);
         }
 
-
-
-
         // GET: Register (Displays the registration form)
         public IActionResult Register()
         {
@@ -95,6 +100,18 @@ namespace Contract_Monthly_Claim_System.Controllers
             // Compare the hashed input password with the stored hashed password
             return hashedInputPassword == hashedPassword;
         }
+
+
+        // Logout
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Logout()
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            TempData["SuccessMessage"] = "You have been logged out."; // Optionally, set a success message
+            return RedirectToAction("Login", "Home"); // Redirect to the Login action
+        }
+
 
         // Login
         [HttpPost]
