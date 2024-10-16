@@ -3,6 +3,14 @@
     ViewData["Title"] = "Register Page";
 }
 
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+
 <!-- Centered container for the registration form -->
 <div class="register-container">
     <div class="register-box">
@@ -50,7 +58,6 @@
             <!-- Submit button -->
             <button type="submit" class="btn btn-primary register-btn">Register</button>
         </form>
-
     </div>
 </div>
 

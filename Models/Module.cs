@@ -1,5 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace Contract_Monthly_Claim_System.Models
 {
@@ -10,8 +10,7 @@ namespace Contract_Monthly_Claim_System.Models
         public string ModuleName { get; set; }
         public string Description { get; set; }
 
-        // Navigation property to LecturerModules
+        public ICollection<ClaimsModules> ClaimsModules { get; set; } = new List<ClaimsModules>();
         public ICollection<LecturerModules> LecturerModules { get; set; } = new List<LecturerModules>();
     }
 }
-

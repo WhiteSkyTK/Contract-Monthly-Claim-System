@@ -1,5 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace Contract_Monthly_Claim_System.Models
 {
@@ -18,9 +18,7 @@ namespace Contract_Monthly_Claim_System.Models
         [Required]
         public string LecturerPassword { get; set; }
 
-        // Navigation properties (if needed)
-        public ICollection<Claims> Claims { get; set; }
-        public ICollection<Module> Modules { get; set; }
+        public ICollection<Claims> Claims { get; set; } = new List<Claims>();
         public ICollection<LecturerModules> LecturerModules { get; set; } = new List<LecturerModules>();
     }
 }

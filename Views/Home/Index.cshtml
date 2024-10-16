@@ -2,7 +2,16 @@
     ViewData["Title"] = "Login Page";
 }
 
-<!-- Centered container for the login form -->
+@if (!ViewData.ModelState.IsValid)
+{
+    foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+    {
+        <div class="alert alert-danger">
+            @error.ErrorMessage
+        </div>
+    }
+}
+
 <div class="login-container">
     <div class="login-box">
         <h1 class="login-title">Welcome Back!</h1>
@@ -37,7 +46,6 @@
     </div>
 </div>
 
-<!-- Optional section for footer links or social media -->
 <div class="login-footer">
     <p>Don't have an account? <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Register">Sign Up</a></p>
 </div>

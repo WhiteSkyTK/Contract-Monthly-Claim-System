@@ -5,7 +5,8 @@ using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
-using Microsoft.EntityFrameworkCore; // Don't forget to include this for EF Core
+using Microsoft.EntityFrameworkCore;
+
 
 namespace Contract_Monthly_Claim_System.Controllers
 {
@@ -58,6 +59,53 @@ namespace Contract_Monthly_Claim_System.Controllers
             return View();
         }
 
+        //Login
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Login(string Username, string Password, bool RememberMe)
+        {
+            // Fetch the user from the database using the provided username
+            var user = _context.Users.SingleOrDefault(u => u.Username == Username);
+
+            if (user == null)
+            {
+                // If user does not exist
+                ModelState.AddModelError(string.Empty, "This user does not exist.");
+                return View(); // Return to the login view
+            }
+
+            // Verify the password (assuming you have a method to hash and compare passwords)
+            if (!VerifyPassword(user.PasswordHash, Password))
+            {
+                // If password is incorrect
+                ModelState.AddModelError(string.Empty, "Incorrect password.");
+                return View(); // Return to the login view
+            }
+
+            // If login is successful, set up authentication (if needed)
+            // This example assumes you have a method to sign in the user
+            SignInUser(user, RememberMe);
+
+            // Redirect to the Submit Claim page
+            return RedirectToAction("SubmitClaim", "Claims"); // Adjust as per your actual action/controller names
+        }
+
+        // Example method to sign in the user
+        private void SignInUser(User user, bool rememberMe)
+        {
+            // You can set up authentication cookies here, or use any authentication method
+            // For example, using ASP.NET Identity
+        }
+
+        // Example method to verify the password
+        private bool VerifyPassword(string hashedPassword, string password)
+        {
+            // Implement your password verification logic here (e.g., using BCrypt)
+            return BCrypt.Net.BCrypt.Verify(password, hashedPassword);
+        }
+
+
+        //Form
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SubmitClaimsAsync(Claims claim, IFormFile SupportingDocuments)
@@ -127,6 +175,9 @@ namespace Contract_Monthly_Claim_System.Controllers
 
                 // Save changes to the database
                 _context.SaveChanges();
+
+                // Set success message
+                TempData["SuccessMessage"] = "Registration successful! You can now log in.";
 
                 // Redirect to a confirmation page or home page
                 return RedirectToAction("Index");

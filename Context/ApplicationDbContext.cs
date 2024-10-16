@@ -3,51 +3,69 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Contract_Monthly_Claim_System.Context
 {
-    public class ApplicationDbContext :DbContext
+    public class ApplicationDbContext : DbContext
     {
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> contextOptions)
-            : base(contextOptions)
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+            : base(options)
         {
         }
 
-        // DbSets for each model
         public DbSet<Lecturer> Lecturers { get; set; }
         public DbSet<Claims> Claims { get; set; }
-        public DbSet<ProgrammeCoordintor> ProgrammeCoordinators { get; set; }
+        public DbSet<ProgrammeCoordinator> ProgrammeCoordinators { get; set; }
         public DbSet<AcademicManager> AcademicManagers { get; set; }
         public DbSet<ApprovalProcess> ApprovalProcesses { get; set; }
         public DbSet<SupportingDocuments> SupportingDocuments { get; set; }
         public DbSet<Module> Modules { get; set; }
-        public DbSet<Users> Users { get; set; }
         public DbSet<ClaimsModules> ClaimsModules { get; set; }
         public DbSet<LecturerModules> LecturerModules { get; set; }
+        public DbSet<Users> Users { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // Configuring LecturerModules relationships with OnDelete restrict
             modelBuilder.Entity<LecturerModules>()
-                .HasOne(lm => lm.Lecturer)
-                .WithMany(l => l.LecturerModules)
-                .HasForeignKey(lm => lm.LecturerID)
-                .OnDelete(DeleteBehavior.Restrict); // Avoid cascade delete
+                .HasKey(lm => new { lm.LecturerID, lm.ModuleCode });
 
-            modelBuilder.Entity<LecturerModules>()
-                .HasOne(lm => lm.Module)
-                .WithMany(m => m.LecturerModules)
-                .HasForeignKey(lm => lm.ModuleCode)
-                .OnDelete(DeleteBehavior.Restrict); // Avoid cascade delete
+            modelBuilder.Entity<ClaimsModules>()
+                .HasKey(cm => new { cm.ClaimID, cm.ModuleCode });
+
+            modelBuilder.Entity<Claims>()
+                .HasOne(c => c.Lecturer)
+                .WithMany(l => l.Claims)
+                .HasForeignKey(c => c.LecturerID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Claims>()
+                .HasOne(c => c.Coordinator)
+                .WithMany(c => c.Claims)
+                .HasForeignKey(c => c.CoordinatorID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Claims>()
+                .HasOne(c => c.Manager)
+                .WithMany(m => m.Claims)
+                .HasForeignKey(c => c.ManagerID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Claims>()
+                .HasMany(c => c.ClaimsModules)
+                .WithOne(cm => cm.Claims)
+                .HasForeignKey(cm => cm.ClaimID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ClaimsModules>()
+                .HasOne(cm => cm.Module)
+                .WithMany(m => m.ClaimsModules)
+                .HasForeignKey(cm => cm.ModuleCode)
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<ApprovalProcess>()
                 .HasOne(a => a.Claims)
                 .WithMany(c => c.ApprovalProcesses)
                 .HasForeignKey(a => a.ClaimID)
                 .OnDelete(DeleteBehavior.Restrict);
-
-            
         }
-
-
     }
 }
