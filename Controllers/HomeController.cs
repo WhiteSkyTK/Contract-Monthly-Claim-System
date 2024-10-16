@@ -6,6 +6,10 @@ using System.Diagnostics;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
 
 
 namespace Contract_Monthly_Claim_System.Controllers
@@ -22,10 +26,18 @@ namespace Contract_Monthly_Claim_System.Controllers
             _context = context;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View();
+            var model = new SubmitClaimsViewModel();
+
+            if (User.Identity.IsAuthenticated)
+            {
+                model.Lecturer = await _context.Lecturers.SingleOrDefaultAsync(l => l.LecturerEmail == User.Identity.Name);
+            }
+
+            return View(model);
         }
+
 
         public IActionResult VerifyClaims()
         {
@@ -48,10 +60,20 @@ namespace Contract_Monthly_Claim_System.Controllers
             return RedirectToAction("TrackClaims");
         }
 
-        public IActionResult Submit()
+        public async Task<IActionResult> Submit()
         {
-            return View();
+            var model = new SubmitClaimsViewModel();
+
+            if (User.Identity.IsAuthenticated)
+            {
+                model.Lecturer = await _context.Lecturers.SingleOrDefaultAsync(l => l.LecturerEmail == User.Identity.Name);
+            }
+
+            return View(model);
         }
+
+
+
 
         // GET: Register (Displays the registration form)
         public IActionResult Register()
@@ -59,94 +81,99 @@ namespace Contract_Monthly_Claim_System.Controllers
             return View();
         }
 
-        //Login
+        // Password verification method using PBKDF2
+        private bool VerifyPassword(string hashedPassword, string password, byte[] salt)
+        {
+            // Hash the provided password using the same salt
+            string hashedInputPassword = Convert.ToBase64String(KeyDerivation.Pbkdf2(
+                password: password,
+                salt: salt,
+                prf: KeyDerivationPrf.HMACSHA256,
+                iterationCount: 10000,
+                numBytesRequested: 256 / 8));
+
+            // Compare the hashed input password with the stored hashed password
+            return hashedInputPassword == hashedPassword;
+        }
+
+        // Login
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Login(string Username, string Password, bool RememberMe)
+        public async Task<IActionResult> Login(string Username, string Password, bool RememberMe)
         {
-            // Fetch the user from the database using the provided username
-            var user = _context.Users.SingleOrDefault(u => u.Username == Username);
+            var user = await _context.Users.SingleOrDefaultAsync(u => u.Username == Username);
 
             if (user == null)
             {
-                // If user does not exist
                 ModelState.AddModelError(string.Empty, "This user does not exist.");
                 return View(); // Return to the login view
             }
 
-            // Verify the password (assuming you have a method to hash and compare passwords)
-            if (!VerifyPassword(user.PasswordHash, Password))
+            // Convert the stored salt back from base64
+            byte[] salt = Convert.FromBase64String(user.Salt); // Assuming you have a Salt field in your Users table
+
+            // Verify the password using PBKDF2
+            if (!VerifyPassword(user.PasswordHash, Password, salt))
             {
-                // If password is incorrect
                 ModelState.AddModelError(string.Empty, "Incorrect password.");
                 return View(); // Return to the login view
             }
 
-            // If login is successful, set up authentication (if needed)
-            // This example assumes you have a method to sign in the user
-            SignInUser(user, RememberMe);
+            // Create claims for the user
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, user.Username),
+                new Claim(ClaimTypes.Role, user.Role)
+            };
+
+            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var authProperties = new AuthenticationProperties
+            {
+                IsPersistent = RememberMe,
+                ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(30)
+            };
+
+            // Sign in the user
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity), authProperties);
 
             // Redirect to the Submit Claim page
-            return RedirectToAction("SubmitClaim", "Claims"); // Adjust as per your actual action/controller names
-        }
-
-        // Example method to sign in the user
-        private void SignInUser(User user, bool rememberMe)
-        {
-            // You can set up authentication cookies here, or use any authentication method
-            // For example, using ASP.NET Identity
-        }
-
-        // Example method to verify the password
-        private bool VerifyPassword(string hashedPassword, string password)
-        {
-            // Implement your password verification logic here (e.g., using BCrypt)
-            return BCrypt.Net.BCrypt.Verify(password, hashedPassword);
+            return RedirectToAction("Submit", "Home");
         }
 
 
-        //Form
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SubmitClaimsAsync(Claims claim, IFormFile SupportingDocuments)
         {
             if (ModelState.IsValid)
             {
-                // Associate the current logged-in lecturer with the claim
-                var lecturer = _context.Lecturers.SingleOrDefault(l => l.LecturerEmail == User.Identity.Name);
+                var lecturer = await _context.Lecturers.SingleOrDefaultAsync(l => l.LecturerEmail == User.Identity.Name);
                 if (lecturer != null)
                 {
                     claim.LecturerID = lecturer.LecturerID;
                     claim.SubmissionDate = DateTime.Now;
-                    claim.Status = "Pending"; // Default status when claim is submitted
+                    claim.Status = "Pending";
 
-                    // Handle file upload if there's a supporting document
                     if (SupportingDocuments != null && SupportingDocuments.Length > 0)
                     {
-                        // Save the file, e.g., to wwwroot/uploads or a database
                         var filePath = Path.Combine("wwwroot/uploads", SupportingDocuments.FileName);
                         using (var stream = new FileStream(filePath, FileMode.Create))
                         {
-                            SupportingDocuments.CopyTo(stream);
+                            await SupportingDocuments.CopyToAsync(stream);
                         }
-
-                        // You can store the file path or any additional info if needed
                     }
 
-                    // Add the claim to the database
                     _context.Claims.Add(claim);
-                    await _context.SaveChangesAsync(); // Use async save
-
-                    return RedirectToAction("TrackClaims"); // Redirect to the tracking page
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction("TrackClaims");
                 }
                 else
                 {
-                    // If no lecturer is found (unexpected case)
                     ModelState.AddModelError("", "Lecturer not found. Please log in.");
                 }
             }
 
-            // If validation fails or other issues, return the same view
             return View(claim);
         }
 
@@ -157,33 +184,25 @@ namespace Contract_Monthly_Claim_System.Controllers
         {
             if (ModelState.IsValid)
             {
-                // Hash the password before storing
-                var hashedPassword = HashPassword(lecturer.LecturerPassword);
+                var (hashedPassword, salt) = HashPassword(lecturer.LecturerPassword);
                 lecturer.LecturerPassword = hashedPassword;
 
-                // Add the lecturer to the Lecturers table
                 _context.Lecturers.Add(lecturer);
 
-                // Create a user entry for login purposes
                 var user = new Users
                 {
-                    Username = lecturer.LecturerEmail, // Use LecturerEmail as the username
-                    PasswordHash = hashedPassword,      // Store the hashed password
-                    Role = "Lecturer"                   // Set role as "Lecturer"
+                    Username = lecturer.LecturerEmail,
+                    PasswordHash = hashedPassword,
+                    Salt = Convert.ToBase64String(salt), // Store the salt
+                    Role = "Lecturer"
                 };
                 _context.Users.Add(user);
 
-                // Save changes to the database
                 _context.SaveChanges();
-
-                // Set success message
                 TempData["SuccessMessage"] = "Registration successful! You can now log in.";
-
-                // Redirect to a confirmation page or home page
-                return RedirectToAction("Index");
+                return RedirectToAction("Register");
             }
 
-            // If the model is invalid, return the same view with validation messages
             return View(lecturer);
         }
 
@@ -194,16 +213,14 @@ namespace Contract_Monthly_Claim_System.Controllers
         }
 
         // Password hashing method
-        private string HashPassword(string password)
+        private (string hashedPassword, byte[] salt) HashPassword(string password)
         {
-            // Generate a salt
             byte[] salt = new byte[128 / 8];
             using (var rng = RandomNumberGenerator.Create())
             {
                 rng.GetBytes(salt);
             }
 
-            // Hash the password using PBKDF2 algorithm
             string hashed = Convert.ToBase64String(KeyDerivation.Pbkdf2(
                 password: password,
                 salt: salt,
@@ -211,7 +228,7 @@ namespace Contract_Monthly_Claim_System.Controllers
                 iterationCount: 10000,
                 numBytesRequested: 256 / 8));
 
-            return hashed;
+            return (hashed, salt);
         }
     }
 }

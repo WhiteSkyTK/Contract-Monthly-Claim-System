@@ -1,4 +1,4 @@
-﻿@model Contract_Monthly_Claim_System.Models.Claims
+﻿@model Contract_Monthly_Claim_System.Models.SubmitClaimsViewModel
 @{
     ViewData["Title"] = "Submit Claims";
 }
@@ -6,9 +6,10 @@
 <div class="lecturer-info">
     @if (User.Identity.IsAuthenticated)
     {
-        <h2>Welcome, @User.Identity.Name!</h2>
-        <p><strong>Phone:</strong> 083-123-4567</p> <!-- Placeholder for phone number -->
-        <p><strong>Email:</strong> @User.Identity.Name</p> <!-- Display lecturer email -->
+        var lecturer = Model.Lecturer; // Get the lecturer from the model
+        <h2>Welcome, @lecturer.LecturerName @lecturer.LecturerSurname!</h2>
+        <p><strong>Phone:</strong> @lecturer.LecturerPhone</p> <!-- Assuming there's a PhoneNumber property -->
+        <p><strong>Email:</strong> @User.Identity.Name</p>
     }
     else
     {
@@ -16,6 +17,7 @@
         <p>Please log in to submit your claims.</p>
     }
 </div>
+
 
 <form asp-action="SubmitClaims" method="post" enctype="multipart/form-data">
     <div class="form-group">

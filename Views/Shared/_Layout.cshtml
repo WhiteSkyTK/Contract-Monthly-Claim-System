@@ -47,15 +47,26 @@
                 color: #DE1B38;
             }
 
-        /* Button Styles */
-        .navbar-btn {
-            background-color: #DE1B38;
+        /* Button and Profile Circle Styles */
+        .navbar-btn, .profile-circle {
             color: white;
             font-weight: 600;
             padding: 10px 20px;
-            border-radius: 20px;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #DE1B38;
             transition: background-color 0.3s ease, transform 0.3s ease;
             margin-left: 20px;
+        }
+
+        .profile-circle {
+            background-color: #333333; /* Gray background for profile circle */
+            font-size: 16px;
+            text-transform: uppercase;
         }
 
             .navbar-btn:hover {
@@ -105,7 +116,20 @@
                             <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Track">Track Status</a>
                         </li>
                         <li class="nav-item">
-                            <button class="navbar-btn">Login</button>
+                            @if (User.Identity.IsAuthenticated)
+                            {
+                                // Directly use the code without '@{}'
+                                var nameParts = User.Identity.Name.Split(' ');
+                                var initials = nameParts.Length >= 2 ? $"{nameParts[0][0]}{nameParts[1][0]}" : $"{nameParts[0][0]}";
+
+                                <div class="profile-circle">
+                                    @initials
+                                </div>
+                            }
+                            else
+                            {
+                                <a class="navbar-btn" asp-controller="Home" asp-action="Login">Login</a>
+                            }
                         </li>
                     </ul>
                 </div>
