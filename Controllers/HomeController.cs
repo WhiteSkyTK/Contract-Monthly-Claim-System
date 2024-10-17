@@ -28,11 +28,26 @@ namespace Contract_Monthly_Claim_System.Controllers
             _context = context;
         }
 
-        public IActionResult Login()
+        public IActionResult Home()
         {
+            // Any data retrieval or logic specific to the coordinator
             return View();
         }
 
+        public IActionResult Login()
+        {
+            if (TempData["ErrorMessage"] != null)
+            {
+                ViewBag.ErrorMessage = TempData["ErrorMessage"].ToString();
+            }
+            return View();
+        }
+
+
+        public IActionResult RegisterC()
+        {
+            return View();
+        }
 
         public async Task<IActionResult> Index()
         {
@@ -40,11 +55,52 @@ namespace Contract_Monthly_Claim_System.Controllers
 
             if (User.Identity.IsAuthenticated)
             {
-                model.Lecturer = await _context.Lecturers.SingleOrDefaultAsync(l => l.LecturerEmail == User.Identity.Name);
+                var userEmail = User.Identity.Name; // Fetch the logged-in user's email
+
+                if (User.IsInRole("Lecturer"))
+                {
+                    // Fetch the lecturer details from the database asynchronously
+                    var lecturer = await _context.Lecturers
+                        .SingleOrDefaultAsync(l => l.LecturerEmail == userEmail);
+
+                    if (lecturer == null)
+                    {
+                        // Lecturer not found in the database
+                        TempData["ErrorMessage"] = "Lecturer not found in the system.";
+                        return View(model); // Return the view with an error message
+                    }
+
+                    model.Lecturer = lecturer;
+                }
+                else if (User.IsInRole("Programme Coordinator"))
+                {
+                    // Fetch the program coordinator details from the database asynchronously
+                    var coordinator = await _context.ProgrammeCoordinators
+                        .SingleOrDefaultAsync(pc => pc.CoordinatorEmail == userEmail);
+
+                    if (coordinator == null)
+                    {
+                        // Coordinator not found in the database
+                        TempData["ErrorMessage"] = "Programme Coordinator not found in the system.";
+                        return View(model); // Return the view with an error message
+                    }
+
+                    model.ProgrammeCoordinator = coordinator;
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = "User role not recognized.";
+                    return View(model); // Return the view with an error message
+                }
+
+                return View(model); // Return the view with appropriate user details (lecturer or coordinator)
             }
 
-            return View(model);
+            return View(); // Return the guest view if not authenticated
         }
+
+
+
 
 
         public IActionResult VerifyClaims()
@@ -127,7 +183,7 @@ namespace Contract_Monthly_Claim_System.Controllers
             }
 
             // Convert the stored salt back from base64
-            byte[] salt = Convert.FromBase64String(user.Salt); // Assuming you have a Salt field in your Users table
+            byte[] salt = Convert.FromBase64String(user.Salt);
 
             // Verify the password using PBKDF2
             if (!VerifyPassword(user.PasswordHash, Password, salt))
@@ -138,10 +194,10 @@ namespace Contract_Monthly_Claim_System.Controllers
 
             // Create claims for the user
             var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Name, user.Username),
-                new Claim(ClaimTypes.Role, user.Role)
-            };
+    {
+        new Claim(ClaimTypes.Name, user.Username),
+        new Claim(ClaimTypes.Role, user.Role)
+    };
 
             var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var authProperties = new AuthenticationProperties
@@ -153,10 +209,25 @@ namespace Contract_Monthly_Claim_System.Controllers
             // Sign in the user
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity), authProperties);
 
-            // Redirect to the Submit Claim page
-            return RedirectToAction("Submit", "Home");
+            // Redirect to the appropriate landing page based on role
+            if (user.Role == "Lecturer")
+            {
+                return RedirectToAction("Index", "Home");
+            }
+            else if (user.Role == "Programme Coordinator")
+            {
+                return RedirectToAction("Home", "Home");
+            }
+            else if (user.Role == "Academic Manager")
+            {
+                return RedirectToAction("Home", "Home");
+            }
+            else
+            {
+                // Default action if role is not recognized
+                return RedirectToAction("Index", "Home");
+            }
         }
-
 
 
         [HttpPost]
@@ -194,11 +265,64 @@ namespace Contract_Monthly_Claim_System.Controllers
             return View(claim);
         }
 
+        // POST: RegisterC
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RegisterC(ProgrammeCoordinator coordinator)
+        {
+            // Check if email already exists in the Users table
+            var existingUser = await _context.Users.SingleOrDefaultAsync(u => u.Username == coordinator.CoordinatorEmail);
+
+            if (existingUser != null)
+            {
+                ModelState.AddModelError("CoordinatorEmail", "This email is already registered.");
+                return View(coordinator);
+            }
+
+            if (ModelState.IsValid)
+            {
+                var (hashedPassword, salt) = HashPassword(coordinator.CoordinatorPassword);
+                coordinator.CoordinatorPassword = hashedPassword;
+
+                var user = new Users
+                {
+                    Username = coordinator.CoordinatorEmail,
+                    PasswordHash = hashedPassword,
+                    Salt = Convert.ToBase64String(salt),
+                    Role = "Programme Coordinator"
+                };
+
+                await _context.Users.AddAsync(user);
+                await _context.SaveChangesAsync();
+
+                _context.ProgrammeCoordinators.Add(coordinator);
+                await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = "Account created successfully!";
+                return RedirectToAction("Index", "Home");
+            }
+
+            return View(coordinator);
+        }
+
+
+
+
+
         // POST: Register (Handles form submission)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Register(Lecturer lecturer)
         {
+            // Check if email already exists in the Users table
+            var existingUser = _context.Users.SingleOrDefault(u => u.Username == lecturer.LecturerEmail);
+
+            if (existingUser != null)
+            {
+                ModelState.AddModelError("LecturerEmail", "This email is already registered.");
+                return View(lecturer);
+            }
+
             if (ModelState.IsValid)
             {
                 var (hashedPassword, salt) = HashPassword(lecturer.LecturerPassword);
@@ -210,11 +334,11 @@ namespace Contract_Monthly_Claim_System.Controllers
                 {
                     Username = lecturer.LecturerEmail,
                     PasswordHash = hashedPassword,
-                    Salt = Convert.ToBase64String(salt), // Store the salt
+                    Salt = Convert.ToBase64String(salt),
                     Role = "Lecturer"
                 };
-                _context.Users.Add(user);
 
+                _context.Users.Add(user);
                 _context.SaveChanges();
                 TempData["SuccessMessage"] = "Registration successful! You can now log in.";
                 return RedirectToAction("Register");
@@ -222,6 +346,7 @@ namespace Contract_Monthly_Claim_System.Controllers
 
             return View(lecturer);
         }
+
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()

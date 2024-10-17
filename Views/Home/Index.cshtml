@@ -5,16 +5,54 @@
 
 @if (User.Identity.IsAuthenticated)
 {
-    var lecturer = Model.Lecturer; // Get the lecturer from the model
-    <div class="login-container">
-        <div class="login-box">
-            <h1 class="login-title">Welcome Back, @lecturer.LecturerName @lecturer.LecturerSurname!</h1>
-            <p class="login-subtitle">We're glad to have you back. Ready to submit your claims?</p>
+    // Check if the user is a Lecturer
+    if (User.IsInRole("Lecturer"))
+    {
+        var lecturer = Model.Lecturer; // Ensure the Lecturer is fetched from the model
 
-            <!-- Button to submit claims page -->
-            <a class="btn btn-primary submit-btn" asp-controller="Home" asp-action="Submit">Go to Submit Claims</a>
-        </div>
-    </div>
+        if (lecturer != null)
+        {
+            <div class="login-container">
+                <div class="login-box">
+                    <h1 class="login-title">Welcome Back, @lecturer.LecturerName @lecturer.LecturerSurname!</h1>
+                    <p class="login-subtitle">We're glad to have you back. Ready to submit your claims?</p>
+
+                    <!-- Button to submit claims page -->
+                    <a class="btn btn-primary submit-btn" asp-controller="Home" asp-action="Submit">Go to Submit Claims</a>
+                </div>
+            </div>
+        }
+        else
+        {
+            <p>Error: Lecturer not found.</p>
+        }
+    }
+    // Check if the user is a Program Coordinator
+    else if (User.IsInRole("Programme Coordinator"))
+    {
+        var coordinator = Model.ProgrammeCoordinator; // Ensure the Coordinator is fetched from the model
+
+        if (coordinator != null)
+        {
+            <div class="login-container">
+                <div class="login-box">
+                    <h1 class="login-title">Welcome Back, @coordinator.CoordinatorName @coordinator.CoordinatorSurname!</h1>
+                    <p class="login-subtitle">Ready to review and approve claims?</p>
+
+                    <!-- Button to coordinator claims page -->
+                    <a class="btn btn-primary submit-btn" asp-controller="Coordinator" asp-action="ReviewClaims">Go to Review Claims</a>
+                </div>
+            </div>
+        }
+        else
+        {
+            <p>Error: Program Coordinator not found.</p>
+        }
+    }
+    else
+    {
+        <p>Error: Role not recognized.</p>
+    }
 }
 else
 {
@@ -24,7 +62,7 @@ else
             <p class="login-subtitle">
                 Welcome to our Contract Monthly Claims System! This platform helps lecturers submit claims for hours worked, and program coordinators to review and approve them in real-time.
                 <br /><br />
-                If you're a registered lecturer, you can log in to submit your claims. If you don't have an account yet, you can easily sign up by following the link below.
+                If you're a registered lecturer or program coordinator, you can log in to submit or review claims.
                 <br /><br />
                 Our goal is to make your work smoother and your claim submissions easier, with real-time tracking of claim statuses!
             </p>

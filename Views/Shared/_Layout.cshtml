@@ -8,86 +8,147 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 
-    <style>
-        /* General Styles */
-        body {
-            background-color: #F7F7F7;
-            font-family: 'Poppins', sans-serif;
-        }
 
-        /* Navbar Styles */
+   <style>
+    /* General Styles */
+    body {
+        background-color: #F7F7F7;
+        font-family: 'Poppins', sans-serif;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh; /* Ensures the footer sticks to the bottom */
+    }
+
+    /* Navbar Styles */
+    .navbar {
+        background-color: #262626;
+        color: white;
+        padding: 20px 40px;
+        border-radius: 0 0 10px 10px;
+    }
+
+    .navbar-brand {
+        color: white;
+        font-size: 26px;
+        font-weight: 600;
+        transition: color 0.3s ease;
+    }
+
+    .navbar-brand:hover {
+        color: #DE1B38;
+    }
+
+    .nav-link {
+        color: white;
+        font-weight: 500;
+        margin-right: 20px;
+        transition: color 0.3s ease;
+    }
+
+    .nav-link:hover {
+        color: #DE1B38;
+    }
+
+    /* Button and Profile Circle Styles */
+    .navbar-btn, .profile-circle {
+        color: white;
+        font-weight: 600;
+        padding: 10px 20px;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #DE1B38;
+        transition: background-color 0.3s ease, transform 0.3s ease;
+        margin-left: 20px;
+    }
+
+    .profile-circle {
+        background-color: #333333;
+        font-size: 16px;
+        text-transform: uppercase;
+        cursor: pointer;
+    }
+
+    .profile-circle:hover {
+        background-color: #bf162f;
+    }
+
+    /* Button Style */
+    button.btn-primary {
+        background-color: #DE1B38;
+        border: none;
+        padding: 10px 20px;
+        color: white;
+        font-weight: 500;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    button.btn-primary:hover {
+        background-color: #bf162f;
+    }
+
+    /* Prevent button turning blue on click/focus */
+    button.btn-primary:focus, button.btn-primary:active {
+        background-color: #bf162f;
+        outline: none;
+        box-shadow: none;
+    }
+
+    /* Footer Styles */
+    footer {
+        background-color: #262626;
+        color: white;
+        padding: 20px;
+        text-align: center;
+        margin-top: auto; /* Pushes footer to the bottom */
+    }
+
+    footer a {
+        color: #DE1B38;
+    }
+
+    footer a:hover {
+        color: white;
+    }
+
+    /* Media Query for Responsiveness */
+    @@media (max-width: 768px) {
         .navbar {
-            background-color: #262626;
-            color: white;
-            padding: 20px 40px;
-            border-radius: 0 0 10px 10px;
+            padding: 10px 20px;
         }
 
         .navbar-brand {
-            color: white;
-            font-size: 26px;
-            font-weight: 600;
-            transition: color 0.3s ease;
+            font-size: 22px;
         }
-
-            .navbar-brand:hover {
-                color: #DE1B38;
-            }
 
         .nav-link {
-            color: white;
-            font-weight: 500;
-            margin-right: 20px;
-            transition: color 0.3s ease;
-        }
-
-            .nav-link:hover {
-                color: #DE1B38;
-            }
-
-        /* Button and Profile Circle Styles */
-        .navbar-btn, .profile-circle {
-            color: white;
-            font-weight: 600;
-            padding: 10px 20px;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: #DE1B38;
-            transition: background-color 0.3s ease, transform 0.3s ease;
-            margin-left: 20px;
+            font-size: 14px;
+            margin-right: 10px;
         }
 
         .profile-circle {
-            background-color: #333333;
-            font-size: 16px;
-            text-transform: uppercase;
-            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            font-size: 14px;
         }
 
-            .profile-circle:hover {
-                background-color: #bf162f;
-            }
-
-        /* Footer Styles */
-        footer {
-            background-color: #262626;
-            color: white;
-            padding: 20px;
-            text-align: center;
+        button.btn-primary {
+            width: 100%;
+            margin-top: 10px;
         }
 
-            footer a {
-                color: #DE1B38;
-            }
-
-                footer a:hover {
-                    color: white;
-                }
-    </style>
+        /* Align menu items to the right in mobile view */
+        .collapse.navbar-collapse {
+            justify-content: flex-end; /* Aligns menu items to the right */
+            text-align: right; /* Ensure text is aligned to the right */
+            width: 100%; /* Full width of the navbar */
+        }
+    }
+</style>
 </head>
 <body>
     <header>
@@ -96,7 +157,9 @@
                 <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
                     Contract Monthly Claim System
                 </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false"
+                        aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNav">
@@ -104,22 +167,52 @@
                         <li class="nav-item">
                             <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Submit">Submit Claim</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="VerifyClaims">Verify Claims</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Track">Track Status</a>
-                        </li>
+
+                        @if (User.IsInRole("Lecturer"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Submit">Submit Claim</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Track">Track Status</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Home" asp-action="About">About</a>
+                            </li>
+                        }
+                        else if (User.IsInRole("Programme Coordinator"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Home" asp-action="VerifyClaims">Verify Claims</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Home" asp-action="About">About</a>
+                            </li>
+                        }
+                        else if (User.IsInRole("Academic Manager"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Home" asp-action="ManageClaims">Manage Claims</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Home" asp-action="About">About</a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Home" asp-action="About">About</a>
+                            </li>
+                        }
+
                         <li class="nav-item dropdown">
                             @if (User.Identity.IsAuthenticated)
                             {
                                 var nameParts = User.Identity.Name.Split(' ');
                                 var initials = nameParts.Length >= 2 ? $"{nameParts[0][0]}{nameParts[1][0]}" : $"{nameParts[0][0]}";
 
-                                <a class="profile-circle dropdown-toggle" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <a class="profile-circle dropdown-toggle" href="#" id="profileDropdown"
+                                   role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     @initials
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
@@ -147,7 +240,7 @@
         </main>
     </div>
 
-    <footer class="border-top footer text-muted mt-5">
+    <footer class="border-top footer text-muted">
         <div class="container">
             &copy; 2024 - Contract Monthly Claim System - Tokollo Nonyane
         </div>
