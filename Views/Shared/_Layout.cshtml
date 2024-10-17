@@ -8,147 +8,154 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 
+    <style>
+        /* General Styles */
+        html, body {
+            height: 100%; /* Ensure full height */
+            margin: 0; /* Remove default margin */
+            display: flex;
+            flex-direction: column; /* Stack children vertically */
+        }
 
-   <style>
-    /* General Styles */
-    body {
-        background-color: #F7F7F7;
-        font-family: 'Poppins', sans-serif;
-        display: flex;
-        flex-direction: column;
-        min-height: 100vh; /* Ensures the footer sticks to the bottom */
-    }
+        body {
+            background-color: #F7F7F7;
+            font-family: 'Poppins', sans-serif;
+        }
 
-    /* Navbar Styles */
-    .navbar {
-        background-color: #262626;
-        color: white;
-        padding: 20px 40px;
-        border-radius: 0 0 10px 10px;
-    }
+        /* Main Content Area */
+        .container {
+            flex: 1; /* Allow the main content area to grow */
+        }
 
-    .navbar-brand {
-        color: white;
-        font-size: 26px;
-        font-weight: 600;
-        transition: color 0.3s ease;
-    }
-
-    .navbar-brand:hover {
-        color: #DE1B38;
-    }
-
-    .nav-link {
-        color: white;
-        font-weight: 500;
-        margin-right: 20px;
-        transition: color 0.3s ease;
-    }
-
-    .nav-link:hover {
-        color: #DE1B38;
-    }
-
-    /* Button and Profile Circle Styles */
-    .navbar-btn, .profile-circle {
-        color: white;
-        font-weight: 600;
-        padding: 10px 20px;
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background-color: #DE1B38;
-        transition: background-color 0.3s ease, transform 0.3s ease;
-        margin-left: 20px;
-    }
-
-    .profile-circle {
-        background-color: #333333;
-        font-size: 16px;
-        text-transform: uppercase;
-        cursor: pointer;
-    }
-
-    .profile-circle:hover {
-        background-color: #bf162f;
-    }
-
-    /* Button Style */
-    button.btn-primary {
-        background-color: #DE1B38;
-        border: none;
-        padding: 10px 20px;
-        color: white;
-        font-weight: 500;
-        border-radius: 5px;
-        cursor: pointer;
-    }
-
-    button.btn-primary:hover {
-        background-color: #bf162f;
-    }
-
-    /* Prevent button turning blue on click/focus */
-    button.btn-primary:focus, button.btn-primary:active {
-        background-color: #bf162f;
-        outline: none;
-        box-shadow: none;
-    }
-
-    /* Footer Styles */
-    footer {
-        background-color: #262626;
-        color: white;
-        padding: 20px;
-        text-align: center;
-        margin-top: auto; /* Pushes footer to the bottom */
-    }
-
-    footer a {
-        color: #DE1B38;
-    }
-
-    footer a:hover {
-        color: white;
-    }
-
-    /* Media Query for Responsiveness */
-    @@media (max-width: 768px) {
+        /* Navbar Styles */
         .navbar {
-            padding: 10px 20px;
+            background-color: #262626;
+            color: white;
+            padding: 20px 40px;
+            border-radius: 0 0 10px 10px;
         }
 
         .navbar-brand {
-            font-size: 22px;
+            color: white;
+            font-size: 26px;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .navbar-brand:hover {
+            color: #DE1B38;
         }
 
         .nav-link {
-            font-size: 14px;
-            margin-right: 10px;
+            color: white;
+            font-weight: 500;
+            margin-right: 20px;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: #DE1B38;
+        }
+
+        /* Button and Profile Circle Styles */
+        .navbar-btn, .profile-circle {
+            color: white;
+            font-weight: 600;
+            padding: 10px 20px;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #DE1B38;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            margin-left: 20px;
         }
 
         .profile-circle {
-            width: 30px;
-            height: 30px;
-            font-size: 14px;
+            background-color: #333333;
+            font-size: 16px;
+            text-transform: uppercase;
+            cursor: pointer;
         }
 
+        .profile-circle:hover {
+            background-color: #bf162f;
+        }
+
+        /* Button Style */
         button.btn-primary {
-            width: 100%;
-            margin-top: 10px;
+            background-color: #DE1B38;
+            border: none;
+            padding: 10px 20px;
+            color: white;
+            font-weight: 500;
+            border-radius: 5px;
+            cursor: pointer;
         }
 
-        /* Align menu items to the right in mobile view */
-        .collapse.navbar-collapse {
-            justify-content: flex-end; /* Aligns menu items to the right */
-            text-align: right; /* Ensure text is aligned to the right */
-            width: 100%; /* Full width of the navbar */
+        button.btn-primary:hover {
+            background-color: #bf162f;
         }
-    }
-</style>
+
+        /* Prevent button turning blue on click/focus */
+        button.btn-primary:focus, button.btn-primary:active {
+            background-color: #bf162f;
+            outline: none;
+            box-shadow: none;
+        }
+
+        /* Footer Styles */
+        footer {
+            background-color: #262626;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        footer a {
+            color: #DE1B38;
+        }
+
+        footer a:hover {
+            color: white;
+        }
+
+        /* Media Query for Responsiveness */
+        @@media (max-width: 768px) {
+            .navbar {
+                padding: 10px 20px;
+            }
+
+            .navbar-brand {
+                font-size: 22px;
+            }
+
+            .nav-link {
+                font-size: 14px;
+                margin-right: 10px;
+            }
+
+            .profile-circle {
+                width: 30px;
+                height: 30px;
+                font-size: 14px;
+            }
+
+            button.btn-primary {
+                width: 100%;
+                margin-top: 10px;
+            }
+
+            /* Align menu items to the right in mobile view */
+            .collapse.navbar-collapse {
+                justify-content: flex-end; /* Aligns menu items to the right */
+                text-align: right; /* Ensure text is aligned to the right */
+                width: 100%; /* Full width of the navbar */
+            }
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -240,7 +247,7 @@
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
+    <footer class="border-top footer text-muted mt-auto">
         <div class="container">
             &copy; 2024 - Contract Monthly Claim System - Tokollo Nonyane
         </div>
