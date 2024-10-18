@@ -171,7 +171,9 @@
         // Check if the user is a Lecturer
         else if (User.IsInRole("Lecturer"))
         {
-            <p class="lead text-center">Welcome, Lecturer!</p>
+            var lecturer = Model.Lecturer; // Ensure the Lecturer is fetched from the model
+
+            <p class="lead text-center">Welcome, @lecturer.LecturerName @lecturer.LecturerSurname!</p>
             <p class="text-center">Here you can submit your claims and track their status.</p>
             <div class="row my-4">
                 <div class="col-md-12">

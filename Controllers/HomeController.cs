@@ -51,23 +51,44 @@ namespace Contract_Monthly_Claim_System.Controllers
 
         public async Task<IActionResult> About()
         {
-            var coordinator = await GetProgrammeCoordinator();
-            if (coordinator == null)
+            var userEmail = User.Identity.Name; // Fetch the logged-in user's email
+            var model = new SubmitClaimsViewModel();
+
+            if (User.IsInRole("Programme Coordinator"))
             {
-                TempData["ErrorMessage"] = "Programme Coordinator not found.";
-                return RedirectToAction("Index"); // Redirect to a safe page
+                var coordinator = await GetProgrammeCoordinator();
+                if (coordinator == null)
+                {
+                    TempData["ErrorMessage"] = "Programme Coordinator not found.";
+                    return RedirectToAction("Index");
+                }
+
+                model.ProgrammeCoordinator = coordinator;
+
+                var academicManager = await GetAcademicManager();
+                model.AcademicManager = academicManager; // Use the retrieved Academic Manager
+            }
+            else if (User.IsInRole("Lecturer"))
+            {
+                var lecturer = await _context.Lecturers
+                    .SingleOrDefaultAsync(l => l.LecturerEmail == userEmail);
+                if (lecturer == null)
+                {
+                    TempData["ErrorMessage"] = "Lecturer not found.";
+                    return RedirectToAction("Index");
+                }
+
+                model.Lecturer = lecturer; // Add lecturer details to the model
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "User role not recognized.";
+                return RedirectToAction("Index");
             }
 
-            var academicManager = await GetAcademicManager(); // Call the new method
-
-            var model = new SubmitClaimsViewModel
-            {
-                ProgrammeCoordinator = coordinator,
-                AcademicManager = academicManager // Use the retrieved Academic Manager
-            };
-
-            return View(model);
+            return View(model); // Return the model to the view
         }
+
 
 
         private async Task<ProgrammeCoordinator> GetProgrammeCoordinator()
