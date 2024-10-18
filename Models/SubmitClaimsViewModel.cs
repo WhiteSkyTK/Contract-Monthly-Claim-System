@@ -5,6 +5,7 @@
         public Claims Claim { get; set; }
         public Lecturer Lecturer { get; set; }
         public ProgrammeCoordinator ProgrammeCoordinator { get; set; }
+        public AcademicManager AcademicManager { get; set; }
     }
 
 }

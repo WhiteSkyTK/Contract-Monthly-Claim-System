@@ -49,6 +49,42 @@ namespace Contract_Monthly_Claim_System.Controllers
             return View();
         }
 
+        public async Task<IActionResult> About()
+        {
+            var coordinator = await GetProgrammeCoordinator();
+            if (coordinator == null)
+            {
+                TempData["ErrorMessage"] = "Programme Coordinator not found.";
+                return RedirectToAction("Index"); // Redirect to a safe page
+            }
+
+            var academicManager = await GetAcademicManager(); // Call the new method
+
+            var model = new SubmitClaimsViewModel
+            {
+                ProgrammeCoordinator = coordinator,
+                AcademicManager = academicManager // Use the retrieved Academic Manager
+            };
+
+            return View(model);
+        }
+
+
+        private async Task<ProgrammeCoordinator> GetProgrammeCoordinator()
+        {
+            var userEmail = User.Identity.Name; // Fetch the logged-in user's email
+            return await _context.ProgrammeCoordinators
+                .SingleOrDefaultAsync(pc => pc.CoordinatorEmail == userEmail);
+        }
+
+        private async Task<AcademicManager> GetAcademicManager()
+        {
+            var userEmail = User.Identity.Name; // Fetch the logged-in user's email
+            return await _context.AcademicManagers
+                .SingleOrDefaultAsync(am => am.ManagerEmail == userEmail);
+        }
+
+
         public async Task<IActionResult> Index()
         {
             var model = new SubmitClaimsViewModel();
