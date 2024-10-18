@@ -1,0 +1,142 @@
+﻿@model Contract_Monthly_Claim_System.Models.AcademicManager
+@{
+    ViewData["Title"] = "Register Academic Manager";
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+@if (!ViewData.ModelState.IsValid)
+{
+    foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+    {
+        <div class="alert alert-danger">
+            @error.ErrorMessage
+        </div>
+    }
+}
+
+<div class="register-container">
+    <div class="register-box">
+        <h1 class="register-title">Register Academic Manager</h1>
+        <p class="register-subtitle">Please fill in the details below to create your account</p>
+
+        <!-- Registration Form -->
+        <form asp-action="RegisterM" method="post">
+            <!-- Manager Name input -->
+            <div class="form-group">
+                <label for="ManagerName">First Name</label>
+                <input asp-for="ManagerName" class="form-control" placeholder="Enter your first name" required>
+                <span asp-validation-for="ManagerName" class="text-danger"></span>
+            </div>
+
+            <!-- Manager Surname input -->
+            <div class="form-group">
+                <label for="ManagerSurname">Surname</label>
+                <input asp-for="ManagerSurname" class="form-control" placeholder="Enter your surname" required>
+                <span asp-validation-for="ManagerSurname" class="text-danger"></span>
+            </div>
+
+            <!-- Manager Email input -->
+            <div class="form-group">
+                <label for="ManagerEmail">Email</label>
+                <input asp-for="ManagerEmail" class="form-control" placeholder="Enter your email" required>
+                <span asp-validation-for="ManagerEmail" class="text-danger"></span>
+            </div>
+
+            <!-- Manager Phone input -->
+            <div class="form-group">
+                <label for="ManagerPhone">Phone</label>
+                <input asp-for="ManagerPhone" class="form-control" placeholder="Enter your phone number" required>
+                <span asp-validation-for="ManagerPhone" class="text-danger"></span>
+            </div>
+
+            <!-- Manager Password input -->
+            <div class="form-group">
+                <label for="ManagerPassword">Password</label>
+                <input asp-for="ManagerPassword" type="password" class="form-control" placeholder="Enter your password" required>
+                <span asp-validation-for="ManagerPassword" class="text-danger"></span>
+            </div>
+
+            <!-- Submit button -->
+            <button type="submit" class="btn btn-primary register-btn">Register</button>
+        </form>
+
+        <!-- Option for password recovery -->
+        <p class="login-option"><a href="@Url.Action("Login", "Home")">Already have an account? Log in here.</a></p>
+    </div>
+</div>
+
+<!-- Custom styles for the register page -->
+<style>
+    .register-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #f7f9fc; /* Adjust background color to match website theme */
+    }
+
+    .register-box {
+        background-color: #ffffff;
+        padding: 2rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        max-width: 400px;
+        width: 100%;
+        text-align: center;
+    }
+
+    .register-title {
+        font-family: 'Montserrat', sans-serif; /* Nice modern font */
+        font-size: 2rem;
+        color: #333333; /* Adjust text color to match site */
+    }
+
+    .register-subtitle {
+        font-family: 'Open Sans', sans-serif; /* Another clean font */
+        color: #666666; /* Subtitle color */
+        margin-bottom: 2rem;
+    }
+
+    .form-control {
+        border: 1px solid #dddddd;
+        padding: 0.75rem;
+        margin-bottom: 1rem;
+        border-radius: 5px;
+        font-family: 'Open Sans', sans-serif;
+    }
+
+    .register-btn {
+        background-color: #DE1B38; /* Primary button color */
+        color: #ffffff;
+        border: none;
+        padding: 0.75rem 2rem;
+        font-size: 1rem;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        width: 100%;
+    }
+
+        .register-btn:hover {
+            background-color: #87071a; /* Darker shade on hover */
+        }
+
+    .login-option {
+        margin-top: 1rem;
+    }
+
+        .login-option a {
+            color: #007bff; /* Link color */
+            text-decoration: none;
+        }
+
+            .login-option a:hover {
+                text-decoration: underline;
+            }
+</style>

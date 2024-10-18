@@ -49,6 +49,28 @@
             <p>Error: Program Coordinator not found.</p>
         }
     }
+    // Check if the user is a Academic Manager
+    else if (User.IsInRole("Academic Manager"))
+    {
+        var manager = Model.AcademicManager; // Ensure the Coordinator is fetched from the model
+
+        if (manager != null)
+        {
+            <div class="login-container">
+                <div class="login-box">
+                    <h1 class="login-title">Welcome Back, @manager.ManagerName @manager.ManagerSurname!</h1>
+                    <p class="login-subtitle">Ready to review and approve claims?</p>
+
+                    <!-- Button to coordinator claims page -->
+                    <a class="btn btn-primary submit-btn" asp-controller="Home" asp-action="VerifyClaims">Go to Review Claims</a>
+                </div>
+            </div>
+        }
+        else
+        {
+            <p>Error: "Academic Manager not found.</p>
+        }
+    }
     else
     {
         <p>Error: Role not recognized.</p>

@@ -28,12 +28,6 @@ namespace Contract_Monthly_Claim_System.Controllers
             _context = context;
         }
 
-        public IActionResult Home()
-        {
-            // Any data retrieval or logic specific to the coordinator
-            return View();
-        }
-
         public IActionResult Login()
         {
             if (TempData["ErrorMessage"] != null)
@@ -42,189 +36,6 @@ namespace Contract_Monthly_Claim_System.Controllers
             }
             return View();
         }
-
-
-        public IActionResult RegisterC()
-        {
-            return View();
-        }
-
-        public async Task<IActionResult> About()
-        {
-            var userEmail = User.Identity.Name; // Fetch the logged-in user's email
-            var model = new SubmitClaimsViewModel();
-
-            if (User.IsInRole("Programme Coordinator"))
-            {
-                var coordinator = await GetProgrammeCoordinator();
-                if (coordinator == null)
-                {
-                    TempData["ErrorMessage"] = "Programme Coordinator not found.";
-                    return RedirectToAction("Index");
-                }
-
-                model.ProgrammeCoordinator = coordinator;
-
-                var academicManager = await GetAcademicManager();
-                model.AcademicManager = academicManager; // Use the retrieved Academic Manager
-            }
-            else if (User.IsInRole("Lecturer"))
-            {
-                var lecturer = await _context.Lecturers
-                    .SingleOrDefaultAsync(l => l.LecturerEmail == userEmail);
-                if (lecturer == null)
-                {
-                    TempData["ErrorMessage"] = "Lecturer not found.";
-                    return RedirectToAction("Index");
-                }
-
-                model.Lecturer = lecturer; // Add lecturer details to the model
-            }
-            else
-            {
-                TempData["ErrorMessage"] = "User role not recognized.";
-                return RedirectToAction("Index");
-            }
-
-            return View(model); // Return the model to the view
-        }
-
-
-
-        private async Task<ProgrammeCoordinator> GetProgrammeCoordinator()
-        {
-            var userEmail = User.Identity.Name; // Fetch the logged-in user's email
-            return await _context.ProgrammeCoordinators
-                .SingleOrDefaultAsync(pc => pc.CoordinatorEmail == userEmail);
-        }
-
-        private async Task<AcademicManager> GetAcademicManager()
-        {
-            var userEmail = User.Identity.Name; // Fetch the logged-in user's email
-            return await _context.AcademicManagers
-                .SingleOrDefaultAsync(am => am.ManagerEmail == userEmail);
-        }
-
-
-        public async Task<IActionResult> Index()
-        {
-            var model = new SubmitClaimsViewModel();
-
-            if (User.Identity.IsAuthenticated)
-            {
-                var userEmail = User.Identity.Name; // Fetch the logged-in user's email
-
-                if (User.IsInRole("Lecturer"))
-                {
-                    // Fetch the lecturer details from the database asynchronously
-                    var lecturer = await _context.Lecturers
-                        .SingleOrDefaultAsync(l => l.LecturerEmail == userEmail);
-
-                    if (lecturer == null)
-                    {
-                        // Lecturer not found in the database
-                        TempData["ErrorMessage"] = "Lecturer not found in the system.";
-                        return View(model); // Return the view with an error message
-                    }
-
-                    model.Lecturer = lecturer;
-                }
-                else if (User.IsInRole("Programme Coordinator"))
-                {
-                    // Fetch the program coordinator details from the database asynchronously
-                    var coordinator = await _context.ProgrammeCoordinators
-                        .SingleOrDefaultAsync(pc => pc.CoordinatorEmail == userEmail);
-
-                    if (coordinator == null)
-                    {
-                        // Coordinator not found in the database
-                        TempData["ErrorMessage"] = "Programme Coordinator not found in the system.";
-                        return View(model); // Return the view with an error message
-                    }
-
-                    model.ProgrammeCoordinator = coordinator;
-                }
-                else
-                {
-                    TempData["ErrorMessage"] = "User role not recognized.";
-                    return View(model); // Return the view with an error message
-                }
-
-                return View(model); // Return the view with appropriate user details (lecturer or coordinator)
-            }
-
-            return View(); // Return the guest view if not authenticated
-        }
-
-
-
-
-
-        public IActionResult VerifyClaims()
-        {
-            return View();
-        }
-
-        // Change Track to TrackClaims to retrieve claims
-        public async Task<IActionResult> TrackClaims()
-        {
-            var claims = await _context.Claims
-                .Include(c => c.Lecturer) // Include lecturer info if needed
-                .ToListAsync();
-
-            return View(claims);
-        }
-
-        // Change this method to redirect to TrackClaims
-        public IActionResult Track()
-        {
-            return RedirectToAction("TrackClaims");
-        }
-
-        public async Task<IActionResult> Submit()
-        {
-            var model = new SubmitClaimsViewModel();
-
-            if (User.Identity.IsAuthenticated)
-            {
-                model.Lecturer = await _context.Lecturers.SingleOrDefaultAsync(l => l.LecturerEmail == User.Identity.Name);
-            }
-
-            return View(model);
-        }
-
-        // GET: Register (Displays the registration form)
-        public IActionResult Register()
-        {
-            return View();
-        }
-
-        // Password verification method using PBKDF2
-        private bool VerifyPassword(string hashedPassword, string password, byte[] salt)
-        {
-            // Hash the provided password using the same salt
-            string hashedInputPassword = Convert.ToBase64String(KeyDerivation.Pbkdf2(
-                password: password,
-                salt: salt,
-                prf: KeyDerivationPrf.HMACSHA256,
-                iterationCount: 10000,
-                numBytesRequested: 256 / 8));
-
-            // Compare the hashed input password with the stored hashed password
-            return hashedInputPassword == hashedPassword;
-        }
-
-
-        // Logout
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Logout()
-        {
-            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            TempData["SuccessMessage"] = "You have been logged out."; // Optionally, set a success message
-            return RedirectToAction("Login", "Home"); // Redirect to the Login action
-        }
-
 
         // Login
         [HttpPost]
@@ -273,11 +84,11 @@ namespace Contract_Monthly_Claim_System.Controllers
             }
             else if (user.Role == "Programme Coordinator")
             {
-                return RedirectToAction("Home", "Home");
+                return RedirectToAction("Index", "Home");
             }
             else if (user.Role == "Academic Manager")
             {
-                return RedirectToAction("Home", "Home");
+                return RedirectToAction("Index", "Home");
             }
             else
             {
@@ -286,40 +97,62 @@ namespace Contract_Monthly_Claim_System.Controllers
             }
         }
 
-
+        // Logout
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SubmitClaimsAsync(Claims claim, IFormFile SupportingDocuments)
+        public async Task<IActionResult> Logout()
         {
-            if (ModelState.IsValid)
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            TempData["SuccessMessage"] = "You have been logged out."; // Optionally, set a success message
+            return RedirectToAction("Login", "Home"); // Redirect to the Login action
+        }
+
+        public IActionResult RegisterM()
+        {
+            return View();
+        }
+
+        // Handles form submission for lecturer registration
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RegisterM(AcademicManager academicManager)
+        {
+            // Check if the email already exists
+            var existingUser = await _context.Users.SingleOrDefaultAsync(u => u.Username == academicManager.ManagerEmail);
+            if (existingUser != null)
             {
-                var lecturer = await _context.Lecturers.SingleOrDefaultAsync(l => l.LecturerEmail == User.Identity.Name);
-                if (lecturer != null)
-                {
-                    claim.LecturerID = lecturer.LecturerID;
-                    claim.SubmissionDate = DateTime.Now;
-                    claim.Status = "Pending";
-
-                    if (SupportingDocuments != null && SupportingDocuments.Length > 0)
-                    {
-                        var filePath = Path.Combine("wwwroot/uploads", SupportingDocuments.FileName);
-                        using (var stream = new FileStream(filePath, FileMode.Create))
-                        {
-                            await SupportingDocuments.CopyToAsync(stream);
-                        }
-                    }
-
-                    _context.Claims.Add(claim);
-                    await _context.SaveChangesAsync();
-                    return RedirectToAction("TrackClaims");
-                }
-                else
-                {
-                    ModelState.AddModelError("", "Lecturer not found. Please log in.");
-                }
+                ModelState.AddModelError("MangerEmail", "This email is already registered.");
+                return View(academicManager);
             }
 
-            return View(claim);
+            if (ModelState.IsValid)
+            {
+                var (hashedPassword, salt) = HashPassword(academicManager.ManagerPassword);
+                academicManager.ManagerPassword = hashedPassword;
+
+                _context.AcademicManagers.Add(academicManager);
+
+                var user = new Users
+                {
+                    Username = academicManager.ManagerEmail,
+                    PasswordHash = hashedPassword,
+                    Salt = Convert.ToBase64String(salt),
+                    Role = "Academic Manager"
+                };
+
+                await _context.Users.AddAsync(user);
+                await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = "Registration successful! You can now log in.";
+                return RedirectToAction("Login");
+            }
+
+            return View(academicManager);
+        }
+
+        public IActionResult RegisterC()
+        {
+            return View();
         }
 
         // POST: RegisterC
@@ -362,9 +195,176 @@ namespace Contract_Monthly_Claim_System.Controllers
             return View(coordinator);
         }
 
+        public async Task<IActionResult> About()
+        {
+            var userEmail = User.Identity.Name; // Fetch the logged-in user's email
+            var model = new SubmitClaimsViewModel();
 
+            if (User.IsInRole("Programme Coordinator"))
+            {
+                var coordinator = await GetProgrammeCoordinator();
+                if (coordinator == null)
+                {
+                    TempData["ErrorMessage"] = "Programme Coordinator not found.";
+                    return RedirectToAction("Index");
+                }
 
+                model.ProgrammeCoordinator = coordinator;
 
+                var academicManager = await GetAcademicManager();
+                model.AcademicManager = academicManager; // Use the retrieved Academic Manager
+            }
+            else if (User.IsInRole("Lecturer"))
+            {
+                var lecturer = await _context.Lecturers
+                    .SingleOrDefaultAsync(l => l.LecturerEmail == userEmail);
+                if (lecturer == null)
+                {
+                    TempData["ErrorMessage"] = "Lecturer not found.";
+                    return RedirectToAction("Index");
+                }
+
+                model.Lecturer = lecturer; // Add lecturer details to the model
+            }
+            else if (User.IsInRole("Academic Manager"))
+            {
+                var manager = await _context.AcademicManagers
+                    .SingleOrDefaultAsync(l => l.ManagerEmail == userEmail);
+                if (manager == null)
+                {
+                    TempData["ErrorMessage"] = "Lecturer not found.";
+                    return RedirectToAction("Index");
+                }
+
+                model.AcademicManager = manager; // Add lecturer details to the model
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "User role not recognized.";
+                return RedirectToAction("Index");
+            }
+
+            return View(model); // Return the model to the view
+        }
+
+        private async Task<ProgrammeCoordinator> GetProgrammeCoordinator()
+        {
+            var userEmail = User.Identity.Name; // Fetch the logged-in user's email
+            return await _context.ProgrammeCoordinators
+                .SingleOrDefaultAsync(pc => pc.CoordinatorEmail == userEmail);
+        }
+
+        private async Task<AcademicManager> GetAcademicManager()
+        {
+            var userEmail = User.Identity.Name; // Fetch the logged-in user's email
+            return await _context.AcademicManagers
+                .SingleOrDefaultAsync(am => am.ManagerEmail == userEmail);
+        }
+
+        public async Task<IActionResult> Index()
+        {
+            var model = new SubmitClaimsViewModel();
+
+            if (User.Identity.IsAuthenticated)
+            {
+                var userEmail = User.Identity.Name; // Fetch the logged-in user's email
+
+                if (User.IsInRole("Lecturer"))
+                {
+                    // Fetch the lecturer details from the database asynchronously
+                    var lecturer = await _context.Lecturers
+                        .SingleOrDefaultAsync(l => l.LecturerEmail == userEmail);
+
+                    if (lecturer == null)
+                    {
+                        // Lecturer not found in the database
+                        TempData["ErrorMessage"] = "Lecturer not found in the system.";
+                        return View(model); // Return the view with an error message
+                    }
+
+                    model.Lecturer = lecturer;
+                }
+                else if (User.IsInRole("Programme Coordinator"))
+                {
+                    // Fetch the program coordinator details from the database asynchronously
+                    var coordinator = await _context.ProgrammeCoordinators
+                        .SingleOrDefaultAsync(pc => pc.CoordinatorEmail == userEmail);
+
+                    if (coordinator == null)
+                    {
+                        // Coordinator not found in the database
+                        TempData["ErrorMessage"] = "Programme Coordinator not found in the system.";
+                        return View(model); // Return the view with an error message
+                    }
+
+                    model.ProgrammeCoordinator = coordinator;
+                }
+                //Academic Manager
+                else if (User.IsInRole("Academic Manager"))
+                {
+                    // Fetch the program coordinator details from the database asynchronously
+                    var manager = await _context.AcademicManagers
+                        .SingleOrDefaultAsync(pc => pc.ManagerEmail == userEmail);
+
+                    if (manager == null)
+                    {
+                        // Coordinator not found in the database
+                        TempData["ErrorMessage"] = "Academic Manager not found in the system.";
+                        return View(model); // Return the view with an error message
+                    }
+
+                    model.AcademicManager = manager;
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = "User role not recognized.";
+                    return View(model); // Return the view with an error message
+                }
+
+                return View(model); // Return the view with appropriate user details (lecturer or coordinator)
+            }
+
+            return View(); // Return the guest view if not authenticated
+        }
+
+        public IActionResult VerifyClaims()
+        {
+            return View();
+        }
+
+        // Change Track to TrackClaims to retrieve claims
+        public async Task<IActionResult> TrackClaims()
+        {
+            var claims = await _context.Claims
+                .Include(c => c.Lecturer) // Include lecturer info if needed
+                .ToListAsync();
+
+            return View(claims);
+        }
+
+        // Change this method to redirect to TrackClaims
+        public IActionResult Track()
+        {
+            return RedirectToAction("TrackClaims");
+        }
+
+        public async Task<IActionResult> Submit()
+        {
+            var model = new SubmitClaimsViewModel();
+
+            if (User.Identity.IsAuthenticated)
+            {
+                model.Lecturer = await _context.Lecturers.SingleOrDefaultAsync(l => l.LecturerEmail == User.Identity.Name);
+            }
+
+            return View(model);
+        }
+
+        // GET: Register (Displays the registration form)
+        public IActionResult Register()
+        {
+            return View();
+        }
 
         // POST: Register (Handles form submission)
         [HttpPost]
@@ -428,6 +428,58 @@ namespace Contract_Monthly_Claim_System.Controllers
                 numBytesRequested: 256 / 8));
 
             return (hashed, salt);
+        }
+
+        // Password verification method using PBKDF2
+        private bool VerifyPassword(string hashedPassword, string password, byte[] salt)
+        {
+            // Hash the provided password using the same salt
+            string hashedInputPassword = Convert.ToBase64String(KeyDerivation.Pbkdf2(
+                password: password,
+                salt: salt,
+                prf: KeyDerivationPrf.HMACSHA256,
+                iterationCount: 10000,
+                numBytesRequested: 256 / 8));
+
+            // Compare the hashed input password with the stored hashed password
+            return hashedInputPassword == hashedPassword;
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SubmitClaimsAsync(Claims claim, IFormFile SupportingDocuments)
+        {
+            if (ModelState.IsValid)
+            {
+                var lecturer = await _context.Lecturers.SingleOrDefaultAsync(l => l.LecturerEmail == User.Identity.Name);
+                if (lecturer != null)
+                {
+                    claim.LecturerID = lecturer.LecturerID;
+                    claim.SubmissionDate = DateTime.Now;
+                    claim.Status = "Pending";
+
+                    // Handle file upload
+                    if (SupportingDocuments != null && SupportingDocuments.Length > 0)
+                    {
+                        var filePath = Path.Combine("wwwroot/uploads", SupportingDocuments.FileName);
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await SupportingDocuments.CopyToAsync(stream);
+                        }
+                    }
+
+                    _context.Claims.Add(claim);
+                    await _context.SaveChangesAsync();
+                    TempData["SuccessMessage"] = "Claim submitted successfully!";
+                    return RedirectToAction("TrackClaims");
+                }
+                else
+                {
+                    ModelState.AddModelError("", "Lecturer not found. Please log in.");
+                }
+            }
+
+            return View(claim);
         }
     }
 }

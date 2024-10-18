@@ -21,29 +21,55 @@
 <form asp-action="SubmitClaims" method="post" enctype="multipart/form-data">
     <div class="form-group">
         <label>Select Module</label>
+        @* Update the module options here *@
         <div class="form-check">
-            <input class="form-check-input" type="checkbox" name="Module" value="PROG6212" id="module1">
+            <input class="form-check-input" type="checkbox" name="Modules" value="PROG6212" id="module1" onchange="calculateTotal()">
             <label class="form-check-label" for="module1">PROG6212</label>
         </div>
         <div class="form-check">
-            <input class="form-check-input" type="checkbox" name="Module" value="DATA6222" id="module2">
+            <input class="form-check-input" type="checkbox" name="Modules" value="DATA6222" id="module2" onchange="calculateTotal()">
             <label class="form-check-label" for="module2">DATA6222</label>
         </div>
         <div class="form-check">
-            <input class="form-check-input" type="checkbox" name="Module" value="HCIN6221" id="module3">
+            <input class="form-check-input" type="checkbox" name="Modules" value="HCIN6221" id="module3" onchange="calculateTotal()">
             <label class="form-check-label" for="module3">HCIN6221</label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="Modules" value="IPMA6212" id="module4" onchange="calculateTotal()">
+            <label class="form-check-label" for="module4">IPMA6212</label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="Modules" value="SAND6221" id="module5" onchange="calculateTotal()">
+            <label class="form-check-label" for="module5">SAND6221</label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="Modules" value="WEDE6021" id="module6" onchange="calculateTotal()">
+            <label class="form-check-label" for="module6">WEDE6021</label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="Modules" value="ITPP5112" id="module7" onchange="calculateTotal()">
+            <label class="form-check-label" for="module7">ITPP5112</label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="Modules" value="OPSY5121" id="module8" onchange="calculateTotal()">
+            <label class="form-check-label" for="module8">OPSY5121</label>
         </div>
         <small class="form-text text-muted">You can select multiple modules.</small>
     </div>
 
     <div class="form-group">
         <label for="HoursWorked">Hours Worked</label>
-        <input type="number" class="form-control" id="HoursWorked" name="HoursWorked" min="1" max="200" required>
+        <input type="number" class="form-control" id="HoursWorked" name="HoursWorked" min="1" max="200" required onchange="calculateTotal()">
     </div>
 
     <div class="form-group">
         <label for="HourlyRate">Hourly Rate (R)</label>
-        <input type="number" class="form-control" id="HourlyRate" name="HourlyRate" step="0.01" value="0.00" min="50" max="1000" required>
+        <input type="number" class="form-control" id="HourlyRate" name="HourlyRate" step="0.01" value="0.00" min="50" max="1000" required onchange="calculateTotal()">
+    </div>
+
+    <div class="form-group">
+        <label for="TotalClaimAmount">Total Claim Amount (R)</label>
+        <input type="text" class="form-control" id="TotalClaimAmount" name="TotalClaimAmount" readonly>
     </div>
 
     <div class="form-group">
@@ -62,6 +88,17 @@
 </form>
 
 <script>
+    function calculateTotal() {
+        const modules = document.querySelectorAll('input[name="Modules"]:checked');
+        const hoursWorked = parseFloat(document.getElementById('HoursWorked').value) || 0;
+        const hourlyRate = parseFloat(document.getElementById('HourlyRate').value) || 0;
+
+        const moduleCount = modules.length;
+        const totalClaimAmount = hoursWorked * hourlyRate * moduleCount;
+
+        document.getElementById('TotalClaimAmount').value = totalClaimAmount.toFixed(2);
+    }
+
     document.getElementById('SupportingDocuments').addEventListener('change', function () {
         const fileInput = this;
         const fileNameDisplay = document.getElementById('fileNameDisplay');
