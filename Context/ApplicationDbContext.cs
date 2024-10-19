@@ -18,15 +18,11 @@ namespace Contract_Monthly_Claim_System.Context
         public DbSet<SupportingDocuments> SupportingDocuments { get; set; }
         public DbSet<Module> Modules { get; set; }
         public DbSet<ClaimsModules> ClaimsModules { get; set; }
-        public DbSet<LecturerModules> LecturerModules { get; set; }
         public DbSet<Users> Users { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-
-            modelBuilder.Entity<LecturerModules>()
-                .HasKey(lm => new { lm.LecturerID, lm.ModuleCode });
 
             modelBuilder.Entity<ClaimsModules>()
                 .HasKey(cm => new { cm.ClaimID, cm.ModuleCode });
@@ -35,18 +31,6 @@ namespace Contract_Monthly_Claim_System.Context
                 .HasOne(c => c.Lecturer)
                 .WithMany(l => l.Claims)
                 .HasForeignKey(c => c.LecturerID)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<Claims>()
-                .HasOne(c => c.Coordinator)
-                .WithMany(c => c.Claims)
-                .HasForeignKey(c => c.CoordinatorID)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<Claims>()
-                .HasOne(c => c.Manager)
-                .WithMany(m => m.Claims)
-                .HasForeignKey(c => c.ManagerID)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Claims>()
@@ -62,10 +46,17 @@ namespace Contract_Monthly_Claim_System.Context
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<ApprovalProcess>()
-                .HasOne(a => a.Claims)
-                .WithMany(c => c.ApprovalProcesses)
-                .HasForeignKey(a => a.ClaimID)
+                 .HasOne(a => a.Manager)
+                 .WithMany(am => am.ApprovalProcesses)
+                 .HasForeignKey(a => a.ManagerID) // Ensure you have this foreign key defined
+                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ApprovalProcess>()
+                .HasOne(a => a.Coordinator)
+                .WithMany(pc => pc.ApprovalProcesses)
+                .HasForeignKey(a => a.CoordinatorID) // Ensure you have this foreign key defined
                 .OnDelete(DeleteBehavior.Restrict);
+
         }
     }
 }

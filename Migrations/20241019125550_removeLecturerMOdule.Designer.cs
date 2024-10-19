@@ -4,6 +4,7 @@ using Contract_Monthly_Claim_System.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Contract_Monthly_Claim_System.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241019125550_removeLecturerMOdule")]
+    partial class removeLecturerMOdule
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -76,10 +79,6 @@ namespace Contract_Monthly_Claim_System.Migrations
                     b.Property<int>("CoordinatorID")
                         .HasColumnType("int");
 
-                    b.Property<string>("Feedback")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("ManagerID")
                         .HasColumnType("int");
 
@@ -106,6 +105,9 @@ namespace Contract_Monthly_Claim_System.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("CoordinatorID")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("HourlyRate")
                         .HasColumnType("decimal(18,2)");
 
@@ -114,6 +116,13 @@ namespace Contract_Monthly_Claim_System.Migrations
 
                     b.Property<int>("LecturerID")
                         .HasColumnType("int");
+
+                    b.Property<int>("ManagerID")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ModuleCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -127,7 +136,13 @@ namespace Contract_Monthly_Claim_System.Migrations
 
                     b.HasKey("ClaimID");
 
+                    b.HasIndex("CoordinatorID");
+
                     b.HasIndex("LecturerID");
+
+                    b.HasIndex("ManagerID");
+
+                    b.HasIndex("ModuleCode");
 
                     b.ToTable("Claims");
                 });
@@ -297,19 +312,19 @@ namespace Contract_Monthly_Claim_System.Migrations
                     b.HasOne("Contract_Monthly_Claim_System.Models.Claims", "Claims")
                         .WithMany("ApprovalProcesses")
                         .HasForeignKey("ClaimID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Contract_Monthly_Claim_System.Models.ProgrammeCoordinator", "Coordinator")
                         .WithMany("ApprovalProcesses")
                         .HasForeignKey("CoordinatorID")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Contract_Monthly_Claim_System.Models.AcademicManager", "Manager")
                         .WithMany("ApprovalProcesses")
                         .HasForeignKey("ManagerID")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Claims");
@@ -321,13 +336,37 @@ namespace Contract_Monthly_Claim_System.Migrations
 
             modelBuilder.Entity("Contract_Monthly_Claim_System.Models.Claims", b =>
                 {
+                    b.HasOne("Contract_Monthly_Claim_System.Models.ProgrammeCoordinator", "Coordinator")
+                        .WithMany("Claims")
+                        .HasForeignKey("CoordinatorID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Contract_Monthly_Claim_System.Models.Lecturer", "Lecturer")
                         .WithMany("Claims")
                         .HasForeignKey("LecturerID")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Contract_Monthly_Claim_System.Models.AcademicManager", "Manager")
+                        .WithMany("Claims")
+                        .HasForeignKey("ManagerID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Contract_Monthly_Claim_System.Models.Module", "Module")
+                        .WithMany()
+                        .HasForeignKey("ModuleCode")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Coordinator");
+
                     b.Navigation("Lecturer");
+
+                    b.Navigation("Manager");
+
+                    b.Navigation("Module");
                 });
 
             modelBuilder.Entity("Contract_Monthly_Claim_System.Models.ClaimsModules", b =>
@@ -363,6 +402,8 @@ namespace Contract_Monthly_Claim_System.Migrations
             modelBuilder.Entity("Contract_Monthly_Claim_System.Models.AcademicManager", b =>
                 {
                     b.Navigation("ApprovalProcesses");
+
+                    b.Navigation("Claims");
                 });
 
             modelBuilder.Entity("Contract_Monthly_Claim_System.Models.Claims", b =>
@@ -387,6 +428,8 @@ namespace Contract_Monthly_Claim_System.Migrations
             modelBuilder.Entity("Contract_Monthly_Claim_System.Models.ProgrammeCoordinator", b =>
                 {
                     b.Navigation("ApprovalProcesses");
+
+                    b.Navigation("Claims");
                 });
 #pragma warning restore 612, 618
         }

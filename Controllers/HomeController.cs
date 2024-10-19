@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace Contract_Monthly_Claim_System.Controllers
 {
-   
+
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
@@ -348,18 +348,6 @@ namespace Contract_Monthly_Claim_System.Controllers
             return RedirectToAction("TrackClaims");
         }
 
-        public async Task<IActionResult> Submit()
-        {
-            var model = new SubmitClaimsViewModel();
-
-            if (User.Identity.IsAuthenticated)
-            {
-                model.Lecturer = await _context.Lecturers.SingleOrDefaultAsync(l => l.LecturerEmail == User.Identity.Name);
-            }
-
-            return View(model);
-        }
-
         // GET: Register (Displays the registration form)
         public IActionResult Register()
         {
@@ -445,41 +433,104 @@ namespace Contract_Monthly_Claim_System.Controllers
             return hashedInputPassword == hashedPassword;
         }
 
+        // GET: Submit Claims
+        public IActionResult Submit()
+        {
+            var lecturerEmail = User.Identity.Name;
+            var lecturer = _context.Lecturers.SingleOrDefault(l => l.LecturerEmail == lecturerEmail);
+
+            // Initialize the ClaimSubmissionModel
+            var model = new ClaimSubmissionModel
+            {
+                Lecturer = lecturer,
+                Claim = new Claims(), // Initialize the Claim property
+                Modules = _context.Modules.Select(m => m.ModuleCode).ToList() // Assuming Modules has a ModuleCode property
+            };
+
+            return View(model);
+        }
+
+        // POST: Submit Claims
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SubmitClaimsAsync(Claims claim, IFormFile SupportingDocuments)
+        public async Task<IActionResult> Submit(ClaimSubmissionModel model, List<string> selectedModules, IFormFile SupportingDocuments)
         {
-            if (ModelState.IsValid)
+            // Get the logged-in lecturer
+            var lecturer = await _context.Lecturers.SingleOrDefaultAsync(l => l.LecturerEmail == User.Identity.Name);
+            if (lecturer == null)
             {
-                var lecturer = await _context.Lecturers.SingleOrDefaultAsync(l => l.LecturerEmail == User.Identity.Name);
-                if (lecturer != null)
-                {
-                    claim.LecturerID = lecturer.LecturerID;
-                    claim.SubmissionDate = DateTime.Now;
-                    claim.Status = "Pending";
-
-                    // Handle file upload
-                    if (SupportingDocuments != null && SupportingDocuments.Length > 0)
-                    {
-                        var filePath = Path.Combine("wwwroot/uploads", SupportingDocuments.FileName);
-                        using (var stream = new FileStream(filePath, FileMode.Create))
-                        {
-                            await SupportingDocuments.CopyToAsync(stream);
-                        }
-                    }
-
-                    _context.Claims.Add(claim);
-                    await _context.SaveChangesAsync();
-                    TempData["SuccessMessage"] = "Claim submitted successfully!";
-                    return RedirectToAction("TrackClaims");
-                }
-                else
-                {
-                    ModelState.AddModelError("", "Lecturer not found. Please log in.");
-                }
+                ModelState.AddModelError("", "Lecturer not found.");
+                return View(model);
             }
 
-            return View(claim);
+            // Ensure the model state is valid and at least one module is selected
+            if (!ModelState.IsValid)
+            {
+                // Repopulate the modules for the view if validation fails
+                model.Modules = await _context.Modules.Select(m => m.ModuleCode).ToListAsync(); // Use ModuleCode
+                model.Lecturer = lecturer;
+                return View(model);
+            }
+
+            if (selectedModules == null || !selectedModules.Any())
+            {
+                ModelState.AddModelError("SelectedModules", "Please select at least one module.");
+                return View(model);
+            }
+
+            // Create a new claim object
+            var claim = new Claims
+            {
+                HoursWorked = model.Claim.HoursWorked,
+                HourlyRate = model.Claim.HourlyRate,
+                SubmissionDate = DateTime.Now,
+                AdditionalNotes = model.Claim.AdditionalNotes,
+                LecturerID = lecturer.LecturerID, // Assign the lecturer ID here
+                Status = "Pending",
+                TotalClaimAmount = model.Claim.HoursWorked * model.Claim.HourlyRate * selectedModules.Count,
+                ClaimsModules = new List<ClaimsModules>()
+            };
+
+            // Handle the selected modules
+            foreach (var moduleCode in selectedModules)
+            {
+                claim.ClaimsModules.Add(new ClaimsModules
+                {
+                    ModuleCode = moduleCode, // Ensure you're storing the ModuleCode
+                    Claims = claim
+                });
+            }
+
+            // Handle the file upload
+            if (SupportingDocuments != null && SupportingDocuments.Length > 0)
+            {
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
+                if (!Directory.Exists(uploadsFolder))
+                {
+                    Directory.CreateDirectory(uploadsFolder);
+                }
+                var filePath = Path.Combine(uploadsFolder, SupportingDocuments.FileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await SupportingDocuments.CopyToAsync(stream);
+                }
+
+                claim.SupportingDocuments.Add(new SupportingDocuments
+                {
+                    DocumentName = SupportingDocuments.FileName,
+                    FilePath = filePath,
+                    SubmissionDate = DateTime.Now,
+                    Claims = claim
+                });
+            }
+
+            // Save the claim to the database
+            _context.Claims.Add(claim);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Claim submitted successfully!";
+            return RedirectToAction("TrackClaims"); // Redirect after post to prevent duplicate submissions
         }
     }
 }

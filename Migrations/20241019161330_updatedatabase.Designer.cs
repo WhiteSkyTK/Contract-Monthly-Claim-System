@@ -4,6 +4,7 @@ using Contract_Monthly_Claim_System.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Contract_Monthly_Claim_System.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241019161330_updatedatabase")]
+    partial class updatedatabase
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -76,10 +79,6 @@ namespace Contract_Monthly_Claim_System.Migrations
                     b.Property<int>("CoordinatorID")
                         .HasColumnType("int");
 
-                    b.Property<string>("Feedback")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("ManagerID")
                         .HasColumnType("int");
 
@@ -102,6 +101,9 @@ namespace Contract_Monthly_Claim_System.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ClaimID"));
 
+                    b.Property<int?>("AcademicManagerManagerID")
+                        .HasColumnType("int");
+
                     b.Property<string>("AdditionalNotes")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -113,6 +115,13 @@ namespace Contract_Monthly_Claim_System.Migrations
                         .HasColumnType("int");
 
                     b.Property<int>("LecturerID")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ModuleCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int?>("ProgrammeCoordinatorCoordinatorID")
                         .HasColumnType("int");
 
                     b.Property<string>("Status")
@@ -127,7 +136,13 @@ namespace Contract_Monthly_Claim_System.Migrations
 
                     b.HasKey("ClaimID");
 
+                    b.HasIndex("AcademicManagerManagerID");
+
                     b.HasIndex("LecturerID");
+
+                    b.HasIndex("ModuleCode");
+
+                    b.HasIndex("ProgrammeCoordinatorCoordinatorID");
 
                     b.ToTable("Claims");
                 });
@@ -297,19 +312,19 @@ namespace Contract_Monthly_Claim_System.Migrations
                     b.HasOne("Contract_Monthly_Claim_System.Models.Claims", "Claims")
                         .WithMany("ApprovalProcesses")
                         .HasForeignKey("ClaimID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Contract_Monthly_Claim_System.Models.ProgrammeCoordinator", "Coordinator")
                         .WithMany("ApprovalProcesses")
                         .HasForeignKey("CoordinatorID")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Contract_Monthly_Claim_System.Models.AcademicManager", "Manager")
                         .WithMany("ApprovalProcesses")
                         .HasForeignKey("ManagerID")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Claims");
@@ -321,13 +336,29 @@ namespace Contract_Monthly_Claim_System.Migrations
 
             modelBuilder.Entity("Contract_Monthly_Claim_System.Models.Claims", b =>
                 {
+                    b.HasOne("Contract_Monthly_Claim_System.Models.AcademicManager", null)
+                        .WithMany("Claims")
+                        .HasForeignKey("AcademicManagerManagerID");
+
                     b.HasOne("Contract_Monthly_Claim_System.Models.Lecturer", "Lecturer")
                         .WithMany("Claims")
                         .HasForeignKey("LecturerID")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Contract_Monthly_Claim_System.Models.Module", "Module")
+                        .WithMany()
+                        .HasForeignKey("ModuleCode")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Contract_Monthly_Claim_System.Models.ProgrammeCoordinator", null)
+                        .WithMany("Claims")
+                        .HasForeignKey("ProgrammeCoordinatorCoordinatorID");
+
                     b.Navigation("Lecturer");
+
+                    b.Navigation("Module");
                 });
 
             modelBuilder.Entity("Contract_Monthly_Claim_System.Models.ClaimsModules", b =>
@@ -363,6 +394,8 @@ namespace Contract_Monthly_Claim_System.Migrations
             modelBuilder.Entity("Contract_Monthly_Claim_System.Models.AcademicManager", b =>
                 {
                     b.Navigation("ApprovalProcesses");
+
+                    b.Navigation("Claims");
                 });
 
             modelBuilder.Entity("Contract_Monthly_Claim_System.Models.Claims", b =>
@@ -387,6 +420,8 @@ namespace Contract_Monthly_Claim_System.Migrations
             modelBuilder.Entity("Contract_Monthly_Claim_System.Models.ProgrammeCoordinator", b =>
                 {
                     b.Navigation("ApprovalProcesses");
+
+                    b.Navigation("Claims");
                 });
 #pragma warning restore 612, 618
         }

@@ -18,7 +18,6 @@ namespace Contract_Monthly_Claim_System.Models
         [Required]
         public string ManagerPassword { get; set; }
 
-        public ICollection<Claims> Claims { get; set; } = new List<Claims>();
         public ICollection<ApprovalProcess> ApprovalProcesses { get; set; } = new List<ApprovalProcess>();
     }
 }

@@ -1,14 +1,13 @@
-﻿@model Contract_Monthly_Claim_System.Models.SubmitClaimsViewModel
+﻿@model Contract_Monthly_Claim_System.Models.ClaimSubmissionModel
 @{
     ViewData["Title"] = "Submit Claims";
 }
 
 <div class="lecturer-info">
-    @if (User.Identity.IsAuthenticated)
+    @if (User.Identity.IsAuthenticated && Model.Lecturer != null)
     {
-        var lecturer = Model.Lecturer;
-        <h2>Welcome, @lecturer.LecturerName @lecturer.LecturerSurname!</h2>
-        <p><strong>Phone:</strong> @lecturer.LecturerPhone</p>
+        <h2>Welcome, @Model.Lecturer.LecturerName @Model.Lecturer.LecturerSurname!</h2>
+        <p><strong>Phone:</strong> @Model.Lecturer.LecturerPhone</p>
         <p><strong>Email:</strong> @User.Identity.Name</p>
     }
     else
@@ -18,53 +17,37 @@
     }
 </div>
 
-<form asp-action="SubmitClaims" method="post" enctype="multipart/form-data">
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+<form asp-action="Submit" method="post" enctype="multipart/form-data" onsubmit="return validateForm()">
     <div class="form-group">
         <label>Select Module</label>
-        @* Update the module options here *@
-        <div class="form-check">
-            <input class="form-check-input" type="checkbox" name="Modules" value="PROG6212" id="module1" onchange="calculateTotal()">
-            <label class="form-check-label" for="module1">PROG6212</label>
-        </div>
-        <div class="form-check">
-            <input class="form-check-input" type="checkbox" name="Modules" value="DATA6222" id="module2" onchange="calculateTotal()">
-            <label class="form-check-label" for="module2">DATA6222</label>
-        </div>
-        <div class="form-check">
-            <input class="form-check-input" type="checkbox" name="Modules" value="HCIN6221" id="module3" onchange="calculateTotal()">
-            <label class="form-check-label" for="module3">HCIN6221</label>
-        </div>
-        <div class="form-check">
-            <input class="form-check-input" type="checkbox" name="Modules" value="IPMA6212" id="module4" onchange="calculateTotal()">
-            <label class="form-check-label" for="module4">IPMA6212</label>
-        </div>
-        <div class="form-check">
-            <input class="form-check-input" type="checkbox" name="Modules" value="SAND6221" id="module5" onchange="calculateTotal()">
-            <label class="form-check-label" for="module5">SAND6221</label>
-        </div>
-        <div class="form-check">
-            <input class="form-check-input" type="checkbox" name="Modules" value="WEDE6021" id="module6" onchange="calculateTotal()">
-            <label class="form-check-label" for="module6">WEDE6021</label>
-        </div>
-        <div class="form-check">
-            <input class="form-check-input" type="checkbox" name="Modules" value="ITPP5112" id="module7" onchange="calculateTotal()">
-            <label class="form-check-label" for="module7">ITPP5112</label>
-        </div>
-        <div class="form-check">
-            <input class="form-check-input" type="checkbox" name="Modules" value="OPSY5121" id="module8" onchange="calculateTotal()">
-            <label class="form-check-label" for="module8">OPSY5121</label>
-        </div>
+        @foreach (var module in Model.Modules)
+        {
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="selectedModules" value="@module" id="module_@module" onchange="calculateTotal()">
+                <label class="form-check-label" for="module_@module">@module</label>
+            </div>
+        }
         <small class="form-text text-muted">You can select multiple modules.</small>
+        <span asp-validation-for="Modules" class="text-danger"></span> <!-- Validation for selected modules -->
     </div>
 
     <div class="form-group">
-        <label for="HoursWorked">Hours Worked</label>
-        <input type="number" class="form-control" id="HoursWorked" name="HoursWorked" min="1" max="200" required onchange="calculateTotal()">
+        <label asp-for="Claim.HoursWorked">Hours Worked</label>
+        <input asp-for="Claim.HoursWorked" type="number" class="form-control" min="1" max="200" required onchange="calculateTotal()">
+        <span asp-validation-for="Claim.HoursWorked" class="text-danger"></span>
     </div>
 
     <div class="form-group">
-        <label for="HourlyRate">Hourly Rate (R)</label>
-        <input type="number" class="form-control" id="HourlyRate" name="HourlyRate" step="0.01" value="0.00" min="50" max="1000" required onchange="calculateTotal()">
+        <label asp-for="Claim.HourlyRate">Hourly Rate (R)</label>
+        <input asp-for="Claim.HourlyRate" type="number" class="form-control" step="0.01" min="50" max="1000" required onchange="calculateTotal()">
+        <span asp-validation-for="Claim.HourlyRate" class="text-danger"></span>
     </div>
 
     <div class="form-group">
@@ -73,8 +56,9 @@
     </div>
 
     <div class="form-group">
-        <label for="AdditionalNotes">Additional Notes</label>
-        <textarea class="form-control" id="AdditionalNotes" name="AdditionalNotes" rows="3"></textarea>
+        <label asp-for="Claim.AdditionalNotes">Additional Notes</label>
+        <textarea asp-for="Claim.AdditionalNotes" class="form-control" rows="3"></textarea>
+        <span asp-validation-for="Claim.AdditionalNotes" class="text-danger"></span>
     </div>
 
     <div class="form-group">
@@ -84,19 +68,40 @@
         <div id="fileNameDisplay"></div>
     </div>
 
+    <input type="hidden" name="Claim.Status" value="Pending" />
+    <input type="hidden" name="LecturerID" value="@Model.Lecturer.LecturerID" />
     <button type="submit" class="btn btn-primary submit-btn">Submit Claim</button>
 </form>
 
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger">
+        <strong>Please fix the errors below:</strong>
+        @Html.ValidationSummary()
+    </div>
+}
+
+
+<!-- JavaScript functions -->
 <script>
     function calculateTotal() {
-        const modules = document.querySelectorAll('input[name="Modules"]:checked');
-        const hoursWorked = parseFloat(document.getElementById('HoursWorked').value) || 0;
-        const hourlyRate = parseFloat(document.getElementById('HourlyRate').value) || 0;
+        const modules = document.querySelectorAll('input[name="selectedModules"]:checked');
+        const hoursWorked = parseFloat(document.querySelector('input[name="Claim.HoursWorked"]').value) || 0;
+        const hourlyRate = parseFloat(document.querySelector('input[name="Claim.HourlyRate"]').value) || 0;
 
         const moduleCount = modules.length;
         const totalClaimAmount = hoursWorked * hourlyRate * moduleCount;
 
         document.getElementById('TotalClaimAmount').value = totalClaimAmount.toFixed(2);
+    }
+
+    function validateForm() {
+        const modules = document.querySelectorAll('input[name="selectedModules"]:checked'); // Corrected case
+        if (modules.length === 0) {
+            alert("Please select at least one module.");
+            return false; // Prevent form submission
+        }
+        return true; // Allow form submission
     }
 
     document.getElementById('SupportingDocuments').addEventListener('change', function () {
@@ -116,8 +121,33 @@
     });
 </script>
 
-<!-- Custom styles for better UI -->
+<!-- Custom styles for the submission page -->
 <style>
+    .submit-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #f7f9fc; /* Adjust background color to match the theme */
+    }
+
+    .submit-box {
+        background-color: #ffffff;
+        padding: 2rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        max-width: 400px;
+        width: 100%;
+        text-align: center;
+    }
+
+    .submit-title {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 2rem;
+        color: #333333;
+        margin-bottom: 1.5rem;
+    }
+
     .lecturer-info {
         background-color: #f1f1f1;
         padding: 1rem;
@@ -136,9 +166,19 @@
         margin-bottom: 1rem;
     }
 
+    .form-control-file2 {
+        border: 0px solid #dddddd;
+        padding: 0.75rem;
+        margin-bottom: 1rem;
+        border-radius: 5px;
+        font-family: 'Open Sans', sans-serif;
+    }
+
     .form-control,
     .form-control-file {
+        border: 1px solid #dddddd;
         padding: 0.75rem;
+        margin-bottom: 1rem;
         border-radius: 5px;
         font-family: 'Open Sans', sans-serif;
     }

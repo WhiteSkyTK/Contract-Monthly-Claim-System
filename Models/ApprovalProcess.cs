@@ -22,5 +22,7 @@ namespace Contract_Monthly_Claim_System.Models
         [ForeignKey("Manager")]
         public int ManagerID { get; set; }
         public AcademicManager Manager { get; set; }
+
+        public string Feedback { get; set; }
     }
 }

@@ -11,6 +11,5 @@ namespace Contract_Monthly_Claim_System.Models
         public string Description { get; set; }
 
         public ICollection<ClaimsModules> ClaimsModules { get; set; } = new List<ClaimsModules>();
-        public ICollection<LecturerModules> LecturerModules { get; set; } = new List<LecturerModules>();
     }
 }

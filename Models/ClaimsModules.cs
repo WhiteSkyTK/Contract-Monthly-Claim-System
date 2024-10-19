@@ -15,5 +15,7 @@ namespace Contract_Monthly_Claim_System.Models
         [ForeignKey("Module")]
         public string ModuleCode { get; set; }
         public Module Module { get; set; }
+
+
     }
 }
