@@ -458,13 +458,16 @@ namespace Contract_Monthly_Claim_System.Controllers
         {
             // Retrieve claims that need to be verified (e.g., pending claims)
             var pendingClaims = await _context.Claims
+                                              .Include(c => c.Lecturer) // Ensure Lecturer is loaded
+                                              .Include(c => c.ClaimsModules)
+                                                  .ThenInclude(cm => cm.Module) // Include related modules
+                                              .Include(c => c.SupportingDocuments) // Include documents
                                               .Where(c => c.Status == "Pending")
                                               .ToListAsync();
 
             // Pass the claims to the view
             return View(pendingClaims);
         }
-
 
         [HttpPost]
         public async Task<IActionResult> ApproveClaim(int claimId)
