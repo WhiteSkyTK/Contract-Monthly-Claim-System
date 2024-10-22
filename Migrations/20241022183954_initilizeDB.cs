@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Contract_Monthly_Claim_System.Migrations
 {
     /// <inheritdoc />
-    public partial class InitailCreate : Migration
+    public partial class initilizeDB : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -20,7 +20,8 @@ namespace Contract_Monthly_Claim_System.Migrations
                     ManagerName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ManagerSurname = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ManagerEmail = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ManagerPhone = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    ManagerPhone = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ManagerPassword = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -66,7 +67,8 @@ namespace Contract_Monthly_Claim_System.Migrations
                     CoordinatorName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CoordinatorSurname = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CoordinatorEmail = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CoordinatorPhone = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    CoordinatorPhone = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CoordinatorPassword = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -81,6 +83,7 @@ namespace Contract_Monthly_Claim_System.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Username = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Salt = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Role = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
@@ -89,73 +92,27 @@ namespace Contract_Monthly_Claim_System.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "LecturerModules",
-                columns: table => new
-                {
-                    LecturerID = table.Column<int>(type: "int", nullable: false),
-                    ModuleCode = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    LecturerModulesID = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_LecturerModules", x => new { x.LecturerID, x.ModuleCode });
-                    table.ForeignKey(
-                        name: "FK_LecturerModules_Lecturers_LecturerID",
-                        column: x => x.LecturerID,
-                        principalTable: "Lecturers",
-                        principalColumn: "LecturerID",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_LecturerModules_Modules_ModuleCode",
-                        column: x => x.ModuleCode,
-                        principalTable: "Modules",
-                        principalColumn: "ModuleCode",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Claims",
                 columns: table => new
                 {
                     ClaimID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    ModuleCode = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     HoursWorked = table.Column<int>(type: "int", nullable: false),
                     HourlyRate = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     SubmissionDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     AdditionalNotes = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     LecturerID = table.Column<int>(type: "int", nullable: false),
-                    CoordinatorID = table.Column<int>(type: "int", nullable: false),
-                    ManagerID = table.Column<int>(type: "int", nullable: false),
                     TotalClaimAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Claims", x => x.ClaimID);
                     table.ForeignKey(
-                        name: "FK_Claims_AcademicManagers_ManagerID",
-                        column: x => x.ManagerID,
-                        principalTable: "AcademicManagers",
-                        principalColumn: "ManagerID",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
                         name: "FK_Claims_Lecturers_LecturerID",
                         column: x => x.LecturerID,
                         principalTable: "Lecturers",
                         principalColumn: "LecturerID",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Claims_Modules_ModuleCode",
-                        column: x => x.ModuleCode,
-                        principalTable: "Modules",
-                        principalColumn: "ModuleCode",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Claims_ProgrammeCoordinators_CoordinatorID",
-                        column: x => x.CoordinatorID,
-                        principalTable: "ProgrammeCoordinators",
-                        principalColumn: "CoordinatorID",
                         onDelete: ReferentialAction.Restrict);
                 });
 
@@ -169,7 +126,8 @@ namespace Contract_Monthly_Claim_System.Migrations
                     ApprovalDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ClaimID = table.Column<int>(type: "int", nullable: false),
                     CoordinatorID = table.Column<int>(type: "int", nullable: false),
-                    ManagerID = table.Column<int>(type: "int", nullable: false)
+                    ManagerID = table.Column<int>(type: "int", nullable: false),
+                    Feedback = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -179,19 +137,19 @@ namespace Contract_Monthly_Claim_System.Migrations
                         column: x => x.ManagerID,
                         principalTable: "AcademicManagers",
                         principalColumn: "ManagerID",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_ApprovalProcesses_Claims_ClaimID",
                         column: x => x.ClaimID,
                         principalTable: "Claims",
                         principalColumn: "ClaimID",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_ApprovalProcesses_ProgrammeCoordinators_CoordinatorID",
                         column: x => x.CoordinatorID,
                         principalTable: "ProgrammeCoordinators",
                         principalColumn: "CoordinatorID",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -257,33 +215,13 @@ namespace Contract_Monthly_Claim_System.Migrations
                 column: "ManagerID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Claims_CoordinatorID",
-                table: "Claims",
-                column: "CoordinatorID");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Claims_LecturerID",
                 table: "Claims",
                 column: "LecturerID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Claims_ManagerID",
-                table: "Claims",
-                column: "ManagerID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Claims_ModuleCode",
-                table: "Claims",
-                column: "ModuleCode");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_ClaimsModules_ModuleCode",
                 table: "ClaimsModules",
-                column: "ModuleCode");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_LecturerModules_ModuleCode",
-                table: "LecturerModules",
                 column: "ModuleCode");
 
             migrationBuilder.CreateIndex(
@@ -302,28 +240,25 @@ namespace Contract_Monthly_Claim_System.Migrations
                 name: "ClaimsModules");
 
             migrationBuilder.DropTable(
-                name: "LecturerModules");
-
-            migrationBuilder.DropTable(
                 name: "SupportingDocuments");
 
             migrationBuilder.DropTable(
                 name: "Users");
 
             migrationBuilder.DropTable(
-                name: "Claims");
-
-            migrationBuilder.DropTable(
                 name: "AcademicManagers");
 
             migrationBuilder.DropTable(
-                name: "Lecturers");
+                name: "ProgrammeCoordinators");
 
             migrationBuilder.DropTable(
                 name: "Modules");
 
             migrationBuilder.DropTable(
-                name: "ProgrammeCoordinators");
+                name: "Claims");
+
+            migrationBuilder.DropTable(
+                name: "Lecturers");
         }
     }
 }

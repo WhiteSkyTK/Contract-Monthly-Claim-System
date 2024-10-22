@@ -8,9 +8,9 @@
     <h1 class="text-center">Track Your Claims</h1>
 
     <!-- Toggle buttons for List and Grid views -->
-    <div class="view-toggle text-right mb-3">
-        <button id="listViewBtn" class="btn btn-primary me-2">List View</button>
-        <button id="gridViewBtn" class="btn btn-secondary">Grid View</button>
+    <div class="view-toggle mb-3">
+        <button id="listViewBtn" class="btn btn-outline-primary active-btn">List View</button>
+        <button id="gridViewBtn" class="btn btn-outline-secondary">Grid View</button>
     </div>
 
     <!-- Claims container where the layout will change between list and grid views -->
@@ -19,7 +19,7 @@
         {
             foreach (var claim in Model)
             {
-                <div class="col-12 mb-4 claim-item">
+                <div class="col-md-12 mb-4 claim-item">
                     <div class="card">
                         <div class="card-body">
                             <h5 class="card-title">Claim ID: @claim.ClaimID</h5>
@@ -29,12 +29,13 @@
                             <ul>
                                 @foreach (var module in claim.ClaimsModules)
                                 {
-                                    <li>@module.Module.ModuleName @module.ModuleCode</li>
+                                    <li>@module.Module.ModuleName</li>
                                 }
                             </ul>
 
                             <p><strong>Hours Worked:</strong> @claim.HoursWorked</p>
                             <p><strong>Hourly Rate:</strong> R @claim.HourlyRate.ToString("F2")</p>
+                            <p><strong>Total Amount:</strong> R @claim.TotalClaimAmount</p>
 
                             <div class="progress">
                                 <div class="progress-bar @GetProgressBarClass(claim.Status)" role="progressbar" style="width: @(GetProgressPercentage(claim.Status))%" aria-valuenow="@GetProgressPercentage(claim.Status)" aria-valuemin="0" aria-valuemax="100">
@@ -81,23 +82,34 @@
     }
 }
 
-<script>
-    // JavaScript to toggle between List and Grid view
-    document.getElementById('listViewBtn').addEventListener('click', function () {
-        document.getElementById('claimsContainer').classList.remove('grid-view');
-        document.getElementById('claimsContainer').classList.add('list-view');
-    });
-
-    document.getElementById('gridViewBtn').addEventListener('click', function () {
-        document.getElementById('claimsContainer').classList.remove('list-view');
-        document.getElementById('claimsContainer').classList.add('grid-view');
-    });
-</script>
-
 <style>
+    body {
+        background-color: #f8f9fa; /* Light background color for the page */
+    }
+
+    .container {
+        margin-top: 20px;
+    }
+
+    .view-toggle {
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: flex-end; /* Align buttons to the right */
+    }
+
+    .btn {
+        margin-left: 10px; /* Space between buttons */
+    }
+
+    .active-btn {
+        background-color: #DE1B38; /* Active button color */
+        color: white; /* Text color for active button */
+    }
+
     /* Default view (List View) */
     .list-view .claim-item {
         display: block;
+        width: 100%; /* Full width for list view */
     }
 
     /* Grid View layout */
@@ -113,6 +125,7 @@
     .card {
         border: 1px solid #DE1B38;
         border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow for cards */
     }
 
     /* Status bar and progress */
@@ -125,23 +138,26 @@
         margin-top: 0.5rem;
     }
 
-    /* Grid and List button styles */
-    .view-toggle {
-        margin-bottom: 20px;
-    }
-
     ul {
         list-style-type: disc;
         margin-left: 20px;
     }
-
-    /* Additional styles for a more fun interface */
-    .btn {
-        transition: background-color 0.3s, color 0.3s;
-    }
-
-        .btn:hover {
-            background-color: #DE1B38;
-            color: white;
-        }
 </style>
+
+
+<script>
+    // JavaScript to toggle between List and Grid view
+    document.getElementById('listViewBtn').addEventListener('click', function () {
+        document.getElementById('claimsContainer').classList.remove('grid-view');
+        document.getElementById('claimsContainer').classList.add('list-view');
+        this.classList.add('active-btn'); // Set this button as active
+        document.getElementById('gridViewBtn').classList.remove('active-btn'); // Remove active from grid button
+    });
+
+    document.getElementById('gridViewBtn').addEventListener('click', function () {
+        document.getElementById('claimsContainer').classList.remove('list-view');
+        document.getElementById('claimsContainer').classList.add('grid-view');
+        this.classList.add('active-btn'); // Set this button as active
+        document.getElementById('listViewBtn').classList.remove('active-btn'); // Remove active from list button
+    });
+</script>
