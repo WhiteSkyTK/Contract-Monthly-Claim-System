@@ -12,10 +12,8 @@ using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 
-
 namespace Contract_Monthly_Claim_System.Controllers
 {
-
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
@@ -27,6 +25,131 @@ namespace Contract_Monthly_Claim_System.Controllers
             _logger = logger;
             _context = context;
         }
+
+        // GET: Submit Claims
+        public IActionResult Submit()
+        {
+            var lecturerEmail = User.Identity.Name; // Gets the currently logged-in user's email
+            var lecturer = _context.Lecturers.SingleOrDefault(l => l.LecturerEmail == lecturerEmail);
+
+            if (lecturer == null)
+            {
+                ModelState.AddModelError("", "Lecturer not found.");
+                return View(new ClaimSubmissionModel()); // Return a new model if lecturer not found
+            }
+
+            // Populate the model with the lecturer's information from the database
+            var model = new ClaimSubmissionModel
+            {
+                LecturerID = lecturer.LecturerID,
+                LecturerName = lecturer.LecturerName,
+                LecturerSurname = lecturer.LecturerSurname,
+                LecturerPhone = lecturer.LecturerPhone,
+                LecturerEmail = lecturer.LecturerEmail,
+                Claim = new Claims(),
+                Modules = _context.Modules.Select(m => m.ModuleCode).ToList() // Populate available modules
+            };
+
+            return View(model);
+        }
+
+
+        // POST: Submit Claims
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Submit(ClaimSubmissionModel model, IFormFile SupportingDocuments)
+        {
+            var lecturer = await _context.Lecturers.SingleOrDefaultAsync(l => l.LecturerEmail == User.Identity.Name);
+
+            if (lecturer == null)
+            {
+                ModelState.AddModelError("", "Lecturer not found.");
+                return View(model);
+            }
+
+            // Populate lecturer fields in the model (programmatically)
+            model.LecturerID = lecturer.LecturerID;
+            model.LecturerName = lecturer.LecturerName;
+            model.LecturerSurname = lecturer.LecturerSurname;
+            model.LecturerPhone = lecturer.LecturerPhone;
+            model.LecturerEmail = lecturer.LecturerEmail;
+
+            // Ignore lecturer validation, as they are already filled
+            ModelState.Remove("Lecturer");
+            ModelState.Remove("LecturerName");
+            ModelState.Remove("LecturerSurname");
+            ModelState.Remove("LecturerPhone");
+            ModelState.Remove("LecturerEmail");
+            ModelState.Remove("LecturerPassword");
+
+            if (!ModelState.IsValid)
+            {
+                model.Modules = await _context.Modules.Select(m => m.ModuleCode).ToListAsync(); // Repopulate on error
+                return View(model);
+            }
+
+            if (model.SelectedModules == null || !model.SelectedModules.Any())
+            {
+                ModelState.AddModelError("SelectedModules", "Please select at least one module.");
+                model.Modules = await _context.Modules.Select(m => m.ModuleCode).ToListAsync(); // Repopulate on error
+                return View(model);
+            }
+
+            // Create a new claim object
+            var claim = new Claims
+            {
+                HoursWorked = model.Claim.HoursWorked,
+                HourlyRate = model.Claim.HourlyRate,
+                SubmissionDate = DateTime.Now,
+                AdditionalNotes = model.Claim.AdditionalNotes,
+                LecturerID = model.LecturerID,
+                Status = "Pending",
+                TotalClaimAmount = model.Claim.HoursWorked * model.Claim.HourlyRate * model.SelectedModules.Count,
+                ClaimsModules = new List<ClaimsModules>()
+            };
+
+            // Handle the selected modules
+            foreach (var moduleCode in model.SelectedModules)
+            {
+                claim.ClaimsModules.Add(new ClaimsModules
+                {
+                    ModuleCode = moduleCode,
+                    Claims = claim
+                });
+            }
+
+            // Handle the file upload
+            if (SupportingDocuments != null && SupportingDocuments.Length > 0)
+            {
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
+                if (!Directory.Exists(uploadsFolder))
+                {
+                    Directory.CreateDirectory(uploadsFolder);
+                }
+                var filePath = Path.Combine(uploadsFolder, SupportingDocuments.FileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await SupportingDocuments.CopyToAsync(stream);
+                }
+
+                claim.SupportingDocuments.Add(new SupportingDocuments
+                {
+                    DocumentName = SupportingDocuments.FileName,
+                    FilePath = filePath,
+                    SubmissionDate = DateTime.Now,
+                    Claims = claim
+                });
+            }
+
+            // Save the claim to the database
+            _context.Claims.Add(claim);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Claim submitted successfully!";
+            return RedirectToAction("TrackClaims");
+        }
+
 
         public IActionResult Login()
         {
@@ -191,7 +314,6 @@ namespace Contract_Monthly_Claim_System.Controllers
                 TempData["SuccessMessage"] = "Account created successfully!";
                 return RedirectToAction("Index", "Home");
             }
-
             return View(coordinator);
         }
 
@@ -243,7 +365,6 @@ namespace Contract_Monthly_Claim_System.Controllers
                 TempData["ErrorMessage"] = "User role not recognized.";
                 return RedirectToAction("Index");
             }
-
             return View(model); // Return the model to the view
         }
 
@@ -260,7 +381,6 @@ namespace Contract_Monthly_Claim_System.Controllers
             return await _context.AcademicManagers
                 .SingleOrDefaultAsync(am => am.ManagerEmail == userEmail);
         }
-
         public async Task<IActionResult> Index()
         {
             var model = new SubmitClaimsViewModel();
@@ -320,10 +440,8 @@ namespace Contract_Monthly_Claim_System.Controllers
                     TempData["ErrorMessage"] = "User role not recognized.";
                     return View(model); // Return the view with an error message
                 }
-
                 return View(model); // Return the view with appropriate user details (lecturer or coordinator)
             }
-
             return View(); // Return the guest view if not authenticated
         }
 
@@ -361,7 +479,6 @@ namespace Contract_Monthly_Claim_System.Controllers
         {
             // Check if email already exists in the Users table
             var existingUser = _context.Users.SingleOrDefault(u => u.Username == lecturer.LecturerEmail);
-
             if (existingUser != null)
             {
                 ModelState.AddModelError("LecturerEmail", "This email is already registered.");
@@ -391,7 +508,6 @@ namespace Contract_Monthly_Claim_System.Controllers
 
             return View(lecturer);
         }
-
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
@@ -431,106 +547,6 @@ namespace Contract_Monthly_Claim_System.Controllers
 
             // Compare the hashed input password with the stored hashed password
             return hashedInputPassword == hashedPassword;
-        }
-
-        // GET: Submit Claims
-        public IActionResult Submit()
-        {
-            var lecturerEmail = User.Identity.Name;
-            var lecturer = _context.Lecturers.SingleOrDefault(l => l.LecturerEmail == lecturerEmail);
-
-            // Initialize the ClaimSubmissionModel
-            var model = new ClaimSubmissionModel
-            {
-                Lecturer = lecturer,
-                Claim = new Claims(), // Initialize the Claim property
-                Modules = _context.Modules.Select(m => m.ModuleCode).ToList() // Assuming Modules has a ModuleCode property
-            };
-
-            return View(model);
-        }
-
-        // POST: Submit Claims
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Submit(ClaimSubmissionModel model, List<string> selectedModules, IFormFile SupportingDocuments)
-        {
-            // Get the logged-in lecturer
-            var lecturer = await _context.Lecturers.SingleOrDefaultAsync(l => l.LecturerEmail == User.Identity.Name);
-            if (lecturer == null)
-            {
-                ModelState.AddModelError("", "Lecturer not found.");
-                return View(model);
-            }
-
-            // Ensure the model state is valid and at least one module is selected
-            if (!ModelState.IsValid)
-            {
-                // Repopulate the modules for the view if validation fails
-                model.Modules = await _context.Modules.Select(m => m.ModuleCode).ToListAsync(); // Use ModuleCode
-                model.Lecturer = lecturer;
-                return View(model);
-            }
-
-            if (selectedModules == null || !selectedModules.Any())
-            {
-                ModelState.AddModelError("SelectedModules", "Please select at least one module.");
-                return View(model);
-            }
-
-            // Create a new claim object
-            var claim = new Claims
-            {
-                HoursWorked = model.Claim.HoursWorked,
-                HourlyRate = model.Claim.HourlyRate,
-                SubmissionDate = DateTime.Now,
-                AdditionalNotes = model.Claim.AdditionalNotes,
-                LecturerID = lecturer.LecturerID, // Assign the lecturer ID here
-                Status = "Pending",
-                TotalClaimAmount = model.Claim.HoursWorked * model.Claim.HourlyRate * selectedModules.Count,
-                ClaimsModules = new List<ClaimsModules>()
-            };
-
-            // Handle the selected modules
-            foreach (var moduleCode in selectedModules)
-            {
-                claim.ClaimsModules.Add(new ClaimsModules
-                {
-                    ModuleCode = moduleCode, // Ensure you're storing the ModuleCode
-                    Claims = claim
-                });
-            }
-
-            // Handle the file upload
-            if (SupportingDocuments != null && SupportingDocuments.Length > 0)
-            {
-                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
-                if (!Directory.Exists(uploadsFolder))
-                {
-                    Directory.CreateDirectory(uploadsFolder);
-                }
-                var filePath = Path.Combine(uploadsFolder, SupportingDocuments.FileName);
-
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await SupportingDocuments.CopyToAsync(stream);
-                }
-
-                claim.SupportingDocuments.Add(new SupportingDocuments
-                {
-                    DocumentName = SupportingDocuments.FileName,
-                    FilePath = filePath,
-                    SubmissionDate = DateTime.Now,
-                    Claims = claim
-                });
-            }
-
-            // Save the claim to the database
-            _context.Claims.Add(claim);
-            await _context.SaveChangesAsync();
-
-            TempData["SuccessMessage"] = "Claim submitted successfully!";
-            return RedirectToAction("TrackClaims"); // Redirect after post to prevent duplicate submissions
         }
     }
 }

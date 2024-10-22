@@ -4,11 +4,11 @@
 }
 
 <div class="lecturer-info">
-    @if (User.Identity.IsAuthenticated && Model.Lecturer != null)
+    @if (User.Identity.IsAuthenticated)
     {
-        <h2>Welcome, @Model.Lecturer.LecturerName @Model.Lecturer.LecturerSurname!</h2>
-        <p><strong>Phone:</strong> @Model.Lecturer.LecturerPhone</p>
-        <p><strong>Email:</strong> @User.Identity.Name</p>
+        <h2>Welcome, @Model.LecturerName @Model.LecturerSurname!</h2>
+        <p><strong>Phone:</strong> @Model.LecturerPhone</p>
+        <p><strong>Email:</strong> @Model.LecturerEmail</p>
     }
     else
     {
@@ -30,12 +30,12 @@
         @foreach (var module in Model.Modules)
         {
             <div class="form-check">
-                <input class="form-check-input" type="checkbox" name="selectedModules" value="@module" id="module_@module" onchange="calculateTotal()">
+                <input class="form-check-input" type="checkbox" name="SelectedModules" value="@module" id="module_@module" onchange="calculateTotal()">
                 <label class="form-check-label" for="module_@module">@module</label>
             </div>
         }
         <small class="form-text text-muted">You can select multiple modules.</small>
-        <span asp-validation-for="Modules" class="text-danger"></span> <!-- Validation for selected modules -->
+        <span asp-validation-for="SelectedModules" class="text-danger"></span>
     </div>
 
     <div class="form-group">
@@ -68,10 +68,18 @@
         <div id="fileNameDisplay"></div>
     </div>
 
+    <input type="hidden" name="Lecturer" />
+    <input type="hidden" asp-for="LecturerID" />
+    <input type="hidden" asp-for="LecturerName" />
+    <input type="hidden" asp-for="LecturerSurname" />
+    <input type="hidden" asp-for="LecturerPhone" />
+    <input type="hidden" asp-for="LecturerEmail" />
+
     <input type="hidden" name="Claim.Status" value="Pending" />
-    <input type="hidden" name="LecturerID" value="@Model.Lecturer.LecturerID" />
+
     <button type="submit" class="btn btn-primary submit-btn">Submit Claim</button>
 </form>
+
 
 @if (!ViewData.ModelState.IsValid)
 {
@@ -81,11 +89,9 @@
     </div>
 }
 
-
-<!-- JavaScript functions -->
 <script>
     function calculateTotal() {
-        const modules = document.querySelectorAll('input[name="selectedModules"]:checked');
+        const modules = document.querySelectorAll('input[name="SelectedModules"]:checked');
         const hoursWorked = parseFloat(document.querySelector('input[name="Claim.HoursWorked"]').value) || 0;
         const hourlyRate = parseFloat(document.querySelector('input[name="Claim.HourlyRate"]').value) || 0;
 
@@ -96,12 +102,12 @@
     }
 
     function validateForm() {
-        const modules = document.querySelectorAll('input[name="selectedModules"]:checked'); // Corrected case
+        const modules = document.querySelectorAll('input[name="SelectedModules"]:checked');
         if (modules.length === 0) {
             alert("Please select at least one module.");
-            return false; // Prevent form submission
+            return false;
         }
-        return true; // Allow form submission
+        return true;
     }
 
     document.getElementById('SupportingDocuments').addEventListener('change', function () {
