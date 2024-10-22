@@ -454,10 +454,56 @@ namespace Contract_Monthly_Claim_System.Controllers
             return View(); // Return the guest view if not authenticated
         }
 
-        public IActionResult VerifyClaims()
+        public async Task<IActionResult> VerifyClaims()
         {
-            return View();
+            // Retrieve claims that need to be verified (e.g., pending claims)
+            var pendingClaims = await _context.Claims
+                                              .Where(c => c.Status == "Pending")
+                                              .ToListAsync();
+
+            // Pass the claims to the view
+            return View(pendingClaims);
         }
+
+
+        [HttpPost]
+        public async Task<IActionResult> ApproveClaim(int claimId)
+        {
+            var claim = await _context.Claims.FindAsync(claimId);
+            if (claim == null)
+            {
+                return NotFound("Claim not found.");
+            }
+
+            // Update the claim status and approval process
+            claim.Status = "Approved";
+
+            // Update the database
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("VerifyClaims");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RejectClaim(int claimId, string feedback)
+        {
+            var claim = await _context.Claims.FindAsync(claimId);
+            if (claim == null)
+            {
+                return NotFound("Claim not found.");
+            }
+
+            // Update the claim status and save feedback
+            claim.Status = "Rejected";
+            // Assuming you have a field for RejectionFeedback in your Claims model
+            claim.RejectionFeedback = feedback;
+
+            // Update the database
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("VerifyClaims");
+        }
+
 
         // Change Track to TrackClaims to retrieve claims with related data
         public async Task<IActionResult> TrackClaims()
@@ -524,8 +570,6 @@ namespace Contract_Monthly_Claim_System.Controllers
             return View(claimSubmissionInfo);
 
         }
-
-
 
         // Change this method to redirect to TrackClaims
         public IActionResult Track()

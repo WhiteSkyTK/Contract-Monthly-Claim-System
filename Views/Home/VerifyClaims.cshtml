@@ -1,4 +1,6 @@
-﻿@{
+﻿@model IEnumerable<Claims> // Change this to your appropriate model
+
+@{
     ViewData["Title"] = "Verify Claims";
 }
 
@@ -14,7 +16,7 @@
                     <div class="card">
                         <div class="card-body">
                             <h5 class="card-title">Claim ID: @claim.ClaimID</h5>
-                            <p><strong>Module:</strong> @claim.Module</p>
+                            <p><strong>Module:</strong> @claim.ClaimsModules</p>
                             <p><strong>Hours Worked:</strong> @claim.HoursWorked</p>
                             <p><strong>Hourly Rate:</strong> R@claim.HourlyRate</p>
                             <p><strong>Status:</strong> <span class="status-text">@claim.Status</span></p>
@@ -28,6 +30,10 @@
                                     </form>
                                     <form asp-action="RejectClaim" method="post">
                                         <input type="hidden" name="claimId" value="@claim.ClaimID" />
+                                        <div class="form-group">
+                                            <label for="feedback">Provide Feedback:</label>
+                                            <textarea class="form-control" name="feedback" id="feedback" rows="2" required></textarea>
+                                        </div>
                                         <button type="submit" class="btn btn-danger">Reject</button>
                                     </form>
                                 </div>
@@ -35,16 +41,6 @@
                             else if (claim.Status == "Rejected")
                             {
                                 <p><strong>Feedback:</strong> <span class="text-danger">@claim.RejectionFeedback</span></p>
-                                <div>
-                                    <form asp-action="ProvideFeedback" method="post">
-                                        <input type="hidden" name="claimId" value="@claim.ClaimID" />
-                                        <div class="form-group">
-                                            <label for="feedback">Provide Feedback:</label>
-                                            <textarea class="form-control" name="feedback" id="feedback" rows="2" required></textarea>
-                                        </div>
-                                        <button type="submit" class="btn btn-primary">Submit Feedback</button>
-                                    </form>
-                                </div>
                             }
 
                             <div class="progress">
