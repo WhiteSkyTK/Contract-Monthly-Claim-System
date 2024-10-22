@@ -6,6 +6,7 @@ namespace Contract_Monthly_Claim_System.Models
     public class ClaimsModules
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)] // Ensure auto-increment
         public int ClaimsModulesID { get; set; }
 
         [ForeignKey("Claims")]
@@ -15,7 +16,6 @@ namespace Contract_Monthly_Claim_System.Models
         [ForeignKey("Module")]
         public string ModuleCode { get; set; }
         public Module Module { get; set; }
-
-
     }
+
 }

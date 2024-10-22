@@ -453,11 +453,13 @@ namespace Contract_Monthly_Claim_System.Controllers
             return View();
         }
 
-        // Change Track to TrackClaims to retrieve claims
+        // Change Track to TrackClaims to retrieve claims with related data
         public async Task<IActionResult> TrackClaims()
         {
             var claims = await _context.Claims
                 .Include(c => c.Lecturer) // Include lecturer info if needed
+                .Include(c => c.ClaimsModules) // Include ClaimsModules
+                .ThenInclude(cm => cm.Module) // Include Module inside ClaimsModules
                 .ToListAsync();
 
             return View(claims);
