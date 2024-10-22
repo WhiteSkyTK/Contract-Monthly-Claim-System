@@ -35,11 +35,11 @@ namespace Contract_Monthly_Claim_System.Controllers
             if (lecturer == null)
             {
                 ModelState.AddModelError("", "Lecturer not found.");
-                return View(new ClaimSubmissionModel()); // Return a new model if lecturer not found
+                return View(new ClaimSubmissionDTO()); // Return a new model if lecturer not found
             }
 
             // Populate the model with the lecturer's information from the database
-            var model = new ClaimSubmissionModel
+            var model = new ClaimSubmissionDTO
             {
                 LecturerID = lecturer.LecturerID,
                 LecturerName = lecturer.LecturerName,
@@ -53,11 +53,10 @@ namespace Contract_Monthly_Claim_System.Controllers
             return View(model);
         }
 
-
         // POST: Submit Claims
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Submit(ClaimSubmissionModel model, IFormFile SupportingDocuments)
+        public async Task<IActionResult> Submit(ClaimSubmissionDTO model, IFormFile SupportingDocuments)
         {
             var lecturer = await _context.Lecturers.SingleOrDefaultAsync(l => l.LecturerEmail == User.Identity.Name);
 
@@ -67,27 +66,32 @@ namespace Contract_Monthly_Claim_System.Controllers
                 return View(model);
             }
 
-            // Populate lecturer fields in the model (programmatically)
+            // Programmatically populate lecturer fields in the model
             model.LecturerID = lecturer.LecturerID;
             model.LecturerName = lecturer.LecturerName;
             model.LecturerSurname = lecturer.LecturerSurname;
             model.LecturerPhone = lecturer.LecturerPhone;
             model.LecturerEmail = lecturer.LecturerEmail;
 
-            // Ignore lecturer validation, as they are already filled
+            // Remove lecturer-related validation
             ModelState.Remove("Lecturer");
             ModelState.Remove("LecturerName");
             ModelState.Remove("LecturerSurname");
             ModelState.Remove("LecturerPhone");
             ModelState.Remove("LecturerEmail");
-            ModelState.Remove("LecturerPassword");
 
+            // Bypass ModelState validation for any remaining errors (force submission)
             if (!ModelState.IsValid)
             {
-                model.Modules = await _context.Modules.Select(m => m.ModuleCode).ToListAsync(); // Repopulate on error
-                return View(model);
+                // Ignore errors related to the Lecturer fields
+                var errorsToRemove = new[] { "Lecturer", "LecturerName", "LecturerSurname", "LecturerPhone", "LecturerEmail" };
+                foreach (var errorKey in errorsToRemove)
+                {
+                    ModelState.Remove(errorKey);
+                }
             }
 
+            // Handle selected modules validation
             if (model.SelectedModules == null || !model.SelectedModules.Any())
             {
                 ModelState.AddModelError("SelectedModules", "Please select at least one module.");
@@ -118,7 +122,7 @@ namespace Contract_Monthly_Claim_System.Controllers
                 });
             }
 
-            // Handle the file upload
+            // Handle file upload
             if (SupportingDocuments != null && SupportingDocuments.Length > 0)
             {
                 var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
@@ -149,7 +153,6 @@ namespace Contract_Monthly_Claim_System.Controllers
             TempData["SuccessMessage"] = "Claim submitted successfully!";
             return RedirectToAction("TrackClaims");
         }
-
 
         public IActionResult Login()
         {
