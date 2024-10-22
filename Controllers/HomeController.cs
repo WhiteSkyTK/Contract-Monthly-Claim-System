@@ -190,7 +190,8 @@ namespace Contract_Monthly_Claim_System.Controllers
             var claims = new List<Claim>
     {
         new Claim(ClaimTypes.Name, user.Username),
-        new Claim(ClaimTypes.Role, user.Role)
+        new Claim(ClaimTypes.Role, user.Role),
+        new Claim(ClaimTypes.NameIdentifier, user.userID.ToString()) // Add the user ID claim
     };
 
             var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -202,6 +203,10 @@ namespace Contract_Monthly_Claim_System.Controllers
 
             // Sign in the user
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity), authProperties);
+
+            // Log the user ID and claims
+            Console.WriteLine($"User ID: {user.userID}");
+            Console.WriteLine($"Claims: {string.Join(", ", claims.Select(c => $"{c.Type}: {c.Value}"))}");
 
             // Redirect to the appropriate landing page based on role
             if (user.Role == "Lecturer")
@@ -222,6 +227,7 @@ namespace Contract_Monthly_Claim_System.Controllers
                 return RedirectToAction("Index", "Home");
             }
         }
+
 
         // Logout
         [HttpPost]
@@ -456,18 +462,75 @@ namespace Contract_Monthly_Claim_System.Controllers
         // Change Track to TrackClaims to retrieve claims with related data
         public async Task<IActionResult> TrackClaims()
         {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Login", "Home");
+            }
+
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            Console.WriteLine($"User ID String: '{userIdString}'"); // Check the user ID value
+
+            if (string.IsNullOrEmpty(userIdString))
+            {
+                return BadRequest("User ID not found.");
+            }
+
+            int userId;
+            if (!int.TryParse(userIdString, out userId))
+            {
+                return BadRequest("Invalid user ID.");
+            }
+
+            // Retrieve claims associated with the lecturer
             var claims = await _context.Claims
-                .Include(c => c.Lecturer) // Include lecturer info if needed
-                .Include(c => c.ClaimsModules) // Include ClaimsModules
-                .ThenInclude(cm => cm.Module) // Include Module inside ClaimsModules
+                .Include(c => c.Lecturer)
+                .Include(c => c.ClaimsModules)
+                .ThenInclude(cm => cm.Module)
+                .Where(c => c.LecturerID == userId)
                 .ToListAsync();
 
-            return View(claims);
+            if (claims == null || claims.Count == 0)
+            {
+                return NotFound("No claims found for this lecturer.");
+            }
+
+            // Retrieve lecturer information based on user ID
+            var lecturer = await _context.Lecturers
+                .FindAsync(userId);
+
+            if (lecturer == null)
+            {
+                return NotFound("Lecturer not found.");
+            }
+
+            // Log the lecturer ID
+            Console.WriteLine($"User ID: {lecturer.LecturerID}");
+
+            // Create an instance of ClaimSubmissionInfo
+            var claimSubmissionInfo = new ClaimSubmissionInfo
+            {
+                LecturerID = lecturer.LecturerID,
+                LecturerName = lecturer.LecturerName,
+                LecturerSurname = lecturer.LecturerSurname,
+                LecturerPhone = lecturer.LecturerPhone,
+                LecturerEmail = lecturer.LecturerEmail,
+                Claim = new Claims(),
+                Modules = await _context.Modules.Select(m => m.ModuleName).ToListAsync(),
+                SelectedModules = new List<string>()
+            };
+
+            // Pass claims and lecturer info to the view
+            ViewBag.Claims = claims;
+            return View(claimSubmissionInfo);
+
         }
+
+
 
         // Change this method to redirect to TrackClaims
         public IActionResult Track()
         {
+
             return RedirectToAction("TrackClaims");
         }
 

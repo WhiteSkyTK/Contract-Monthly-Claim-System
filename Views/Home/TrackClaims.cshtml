@@ -1,50 +1,68 @@
-﻿@model IEnumerable<Contract_Monthly_Claim_System.Models.Claims>
+﻿@model ClaimSubmissionInfo
+@using System.Security.Claims
+@using System.Linq
 
 @{
     ViewData["Title"] = "Track Claims";
+    var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier); // Get the current user's ID
+
+    // Use userIdString directly since LecturerID might be an integer
+    var userId = userIdString; // Keep as a string
+
+    // Retrieve claims from ViewBag
+    var claims = ViewBag.Claims as List<Claims>; // Cast ViewBag.Claims to the correct type
 }
 
 <div class="container">
     <h1 class="text-center">Track Your Claims</h1>
 
-    <!-- Toggle buttons for List and Grid views -->
     <div class="view-toggle mb-3">
         <button id="listViewBtn" class="btn btn-outline-primary active-btn">List View</button>
         <button id="gridViewBtn" class="btn btn-outline-secondary">Grid View</button>
     </div>
 
-    <!-- Claims container where the layout will change between list and grid views -->
     <div id="claimsContainer" class="row list-view">
-        @if (Model != null && Model.Any())
+        @if (claims != null && claims.Any())
         {
-            foreach (var claim in Model)
+            // Filter claims based on the logged-in user's ID
+            var userClaims = claims.Where(c => c.LecturerID.ToString() == userId); // Convert LecturerID to string for comparison
+
+            if (!userClaims.Any())
             {
-                <div class="col-md-12 mb-4 claim-item">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">Claim ID: @claim.ClaimID</h5>
-                            <p><strong>Status:</strong> <span class="status-text">@claim.Status</span></p>
-
-                            <p><strong>Modules:</strong></p>
-                            <ul>
-                                @foreach (var module in claim.ClaimsModules)
-                                {
-                                    <li>@module.Module.ModuleName</li>
-                                }
-                            </ul>
-
-                            <p><strong>Hours Worked:</strong> @claim.HoursWorked</p>
-                            <p><strong>Hourly Rate:</strong> R @claim.HourlyRate.ToString("F2")</p>
-                            <p><strong>Total Amount:</strong> R @claim.TotalClaimAmount</p>
-
-                            <div class="progress">
-                                <div class="progress-bar @GetProgressBarClass(claim.Status)" role="progressbar" style="width: @(GetProgressPercentage(claim.Status))%" aria-valuenow="@GetProgressPercentage(claim.Status)" aria-valuemin="0" aria-valuemax="100">
-                                    @claim.Status
+                <div class="col-12">
+                    <div class="alert alert-info" role="alert">
+                        No claims found for you. Please submit your claims to track their status.
+                    </div>
+                </div>
+            }
+            else
+            {
+                foreach (var claim in userClaims)
+                {
+                    <div class="col-md-12 mb-4 claim-item">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Claim ID: @claim.ClaimID</h5>
+                                <p><strong>Status:</strong> <span class="status-text">@claim.Status</span></p>
+                                <p><strong>Modules:</strong></p>
+                                <ul>
+                                    @foreach (var module in claim.ClaimsModules)
+                                    {
+                                        <li>@module.Module.ModuleName</li>
+                                    }
+                                </ul>
+                                <p><strong>Hours Worked:</strong> @claim.HoursWorked</p>
+                                <p><strong>Hourly Rate:</strong> R @claim.HourlyRate.ToString("F2")</p>
+                                <p><strong>Total Amount:</strong> R @claim.TotalClaimAmount</p>
+                                <div class="progress">
+                                    <div class="progress-bar @GetProgressBarClass(claim.Status)" role="progressbar" style="width: @(GetProgressPercentage(claim.Status))%" aria-valuenow="@GetProgressPercentage(claim.Status)" aria-valuemin="0" aria-valuemax="100">
+                                        @claim.Status
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                }
             }
         }
         else
@@ -143,7 +161,6 @@
         margin-left: 20px;
     }
 </style>
-
 
 <script>
     // JavaScript to toggle between List and Grid view
