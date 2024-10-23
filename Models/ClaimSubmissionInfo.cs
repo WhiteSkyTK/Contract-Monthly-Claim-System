@@ -1,14 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Http;
 
 namespace Contract_Monthly_Claim_System.Models
 {
+    [NotMapped] // This prevents EF from mapping the entire class to the database
     public class ClaimSubmissionInfo
     {
         // Claim details
         public Claims Claim { get; set; }
+
+        // Approval process details
+        public ApprovalProcess ApprovalProcess { get; set; }
 
         // List of available modules for selection
         public List<string> Modules { get; set; } = new List<string>();

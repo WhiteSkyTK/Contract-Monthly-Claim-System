@@ -580,6 +580,7 @@ namespace Contract_Monthly_Claim_System.Controllers
 
 
         // Change Track to TrackClaims to retrieve claims with related data
+        // Change Track to TrackClaims to retrieve claims with related data
         public async Task<IActionResult> TrackClaims()
         {
             if (!User.Identity.IsAuthenticated)
@@ -587,36 +588,33 @@ namespace Contract_Monthly_Claim_System.Controllers
                 return RedirectToAction("Login", "Home");
             }
 
+            // Retrieve the user ID from the claims
             var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            Console.WriteLine($"User ID String: '{userIdString}'"); // Check the user ID value
+            Console.WriteLine($"User ID String: '{userIdString}'"); // Debugging log
 
-            if (string.IsNullOrEmpty(userIdString))
-            {
-                return BadRequest("User ID not found.");
-            }
-
-            int userId;
-            if (!int.TryParse(userIdString, out userId))
+            if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
             {
                 return BadRequest("Invalid user ID.");
             }
 
-            // Retrieve claims associated with the lecturer
+            // Retrieve claims associated with the lecturer, including related approval process data
             var claims = await _context.Claims
-                .Include(c => c.Lecturer)
                 .Include(c => c.ClaimsModules)
-                .ThenInclude(cm => cm.Module)
+                    .ThenInclude(cm => cm.Module)
+                .Include(c => c.ApprovalProcesses) // Including approval processes related to the claim
+                    .ThenInclude(ap => ap.Coordinator) // Include Programme Coordinator info
+                .Include(c => c.ApprovalProcesses)
+                    .ThenInclude(ap => ap.Manager) // Include Academic Manager info
                 .Where(c => c.LecturerID == userId)
                 .ToListAsync();
 
-            if (claims == null || claims.Count == 0)
+            if (claims == null || !claims.Any())
             {
                 return NotFound("No claims found for this lecturer.");
             }
 
             // Retrieve lecturer information based on user ID
-            var lecturer = await _context.Lecturers
-                .FindAsync(userId);
+            var lecturer = await _context.Lecturers.FindAsync(userId);
 
             if (lecturer == null)
             {
@@ -626,31 +624,31 @@ namespace Contract_Monthly_Claim_System.Controllers
             // Log the lecturer ID
             Console.WriteLine($"User ID: {lecturer.LecturerID}");
 
-            // Create an instance of ClaimSubmissionInfo
-            var claimSubmissionInfo = new ClaimSubmissionInfo
+            // Create a list of ClaimSubmissionInfo objects to pass to the view
+            var claimSubmissionInfos = claims.Select(c => new ClaimSubmissionInfo
             {
                 LecturerID = lecturer.LecturerID,
                 LecturerName = lecturer.LecturerName,
                 LecturerSurname = lecturer.LecturerSurname,
                 LecturerPhone = lecturer.LecturerPhone,
                 LecturerEmail = lecturer.LecturerEmail,
-                Claim = new Claims(),
-                Modules = await _context.Modules.Select(m => m.ModuleName).ToListAsync(),
-                SelectedModules = new List<string>()
-            };
+                Claim = c,
+                ApprovalProcess = c.ApprovalProcesses.FirstOrDefault(), // Assuming one approval process per claim
+                Modules = c.ClaimsModules.Select(cm => cm.Module.ModuleName).ToList(),
+                SelectedModules = c.ClaimsModules.Select(cm => cm.Module.ModuleName).ToList()
+            }).ToList();
 
             // Pass claims and lecturer info to the view
-            ViewBag.Claims = claims;
-            return View(claimSubmissionInfo);
-
+            ViewBag.ClaimSubmissionInfos = claimSubmissionInfos; // Using ViewBag to pass claims to the view
+            return View(claimSubmissionInfos); // Pass the list to the view
         }
 
         // Change this method to redirect to TrackClaims
         public IActionResult Track()
         {
-
             return RedirectToAction("TrackClaims");
         }
+
 
         // GET: Register (Displays the registration form)
         public IActionResult Register()

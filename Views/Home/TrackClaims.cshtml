@@ -1,16 +1,12 @@
-﻿@model ClaimSubmissionInfo
+﻿@model List<ClaimSubmissionInfo>
 @using System.Security.Claims
 @using System.Linq
 
 @{
     ViewData["Title"] = "Track Claims";
     var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier); // Get the current user's ID
-
-    // Use userIdString directly since LecturerID might be an integer
     var userId = userIdString; // Keep as a string
-
-    // Retrieve claims from ViewBag
-    var claims = ViewBag.Claims as List<Claims>; // Cast ViewBag.Claims to the correct type
+    var claimSubmissionInfos = ViewBag.ClaimSubmissionInfos as List<ClaimSubmissionInfo>; // Cast ViewBag.Claims to the correct type
 }
 
 <div class="container">
@@ -22,10 +18,9 @@
     </div>
 
     <div id="claimsContainer" class="row list-view">
-        @if (claims != null && claims.Any())
+        @if (claimSubmissionInfos != null && claimSubmissionInfos.Any())
         {
-            // Filter claims based on the logged-in user's ID
-            var userClaims = claims.Where(c => c.LecturerID.ToString() == userId); // Convert LecturerID to string for comparison
+            var userClaims = claimSubmissionInfos.Where(c => c.LecturerID.ToString() == userId);
 
             if (!userClaims.Any())
             {
@@ -37,27 +32,36 @@
             }
             else
             {
-                foreach (var claim in userClaims)
+                foreach (var submissionInfo in userClaims)
                 {
+                    // Assuming claim here is of type ClaimSubmissionInfo
                     <div class="col-md-12 mb-4 claim-item">
                         <div class="card">
                             <div class="card-body">
-                                <h5 class="card-title">Claim ID: @claim.ClaimID</h5>
-                                <p><strong>Status:</strong> <span class="status-text">@claim.Status</span></p>
+                                <h5 class="card-title">Claim ID: @submissionInfo.Claim.ClaimID</h5>
+                                <p><strong>Status:</strong> <span class="status-text">@submissionInfo.Claim.Status</span></p>
                                 <p><strong>Modules:</strong></p>
                                 <ul>
-                                    @foreach (var module in claim.ClaimsModules)
+                                    @foreach (var module in submissionInfo.SelectedModules) // Ensure this references the correct list
                                     {
-                                        <li>@module.Module.ModuleName</li>
+                                        <li>@module</li>
                                     }
                                 </ul>
-                                <p><strong>Hours Worked:</strong> @claim.HoursWorked</p>
-                                <p><strong>Hourly Rate:</strong> R @claim.HourlyRate.ToString("F2")</p>
-                                <p><strong>Total Amount:</strong> R @claim.TotalClaimAmount</p>
-                                
+                                <p><strong>Hours Worked:</strong> @submissionInfo.Claim.HoursWorked</p>
+                                <p><strong>Hourly Rate:</strong> R @submissionInfo.Claim.HourlyRate.ToString("F2")</p>
+                                <p><strong>Total Amount:</strong> R @submissionInfo.Claim.TotalClaimAmount</p>
+
+                                if (claim.ApprovalProcess != null) 
+                                {
+                                <p><strong>Feedback:</strong> @submissionInfo.ApprovalProcess.Feedback</p>
+                                <p><strong>Approved/Rejected On:</strong> @submissionInfo.ApprovalProcess.ApprovalDate.ToString("dd MMM yyyy")</p>
+                                <p><strong>Program Coordinator:</strong> @submissionInfo.ApprovalProcess.Coordinator.CoordinatorName @submissionInfo.ApprovalProcess.Coordinator.CoordinatorSurname</p>
+                                <p><strong>Academic Manager:</strong> @submissionInfo.ApprovalProcess.Manager.ManagerName @submissionInfo.ApprovalProcess.Manager.ManagerSurname</p>
+                                }
+
                                 <div class="progress">
-                                    <div class="progress-bar @GetProgressBarClass(claim.Status)" role="progressbar" style="width: @(GetProgressPercentage(claim.Status))%" aria-valuenow="@GetProgressPercentage(claim.Status)" aria-valuemin="0" aria-valuemax="100">
-                                        @claim.Status
+                                    <div class="progress-bar @GetProgressBarClass(submissionInfo.ApprovalProcess.ApprovalStatus)" role="progressbar" style="width: @(GetProgressPercentage(submissionInfo.ApprovalProcess.ApprovalStatus))%" aria-valuenow="@GetProgressPercentage(submissionInfo.ApprovalProcess.ApprovalStatus)" aria-valuemin="0" aria-valuemax="100">
+                                        @submissionInfo.ApprovalProcess.ApprovalStatus
                                     </div>
                                 </div>
                             </div>
@@ -76,6 +80,7 @@
         }
     </div>
 </div>
+
 
 @functions {
     private string GetProgressBarClass(string status)

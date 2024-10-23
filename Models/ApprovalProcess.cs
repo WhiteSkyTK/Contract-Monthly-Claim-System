@@ -24,5 +24,8 @@ namespace Contract_Monthly_Claim_System.Models
         public AcademicManager Manager { get; set; }
 
         public string? Feedback { get; set; }
+
+        public ICollection<ClaimSubmissionInfo> infos { get; set; } = new List<ClaimSubmissionInfo>();
     }
+
 }
