@@ -34,7 +34,6 @@
             {
                 foreach (var submissionInfo in userClaims)
                 {
-                    // Assuming claim here is of type ClaimSubmissionInfo
                     <div class="col-md-12 mb-4 claim-item">
                         <div class="card">
                             <div class="card-body">
@@ -42,7 +41,7 @@
                                 <p><strong>Status:</strong> <span class="status-text">@submissionInfo.Claim.Status</span></p>
                                 <p><strong>Modules:</strong></p>
                                 <ul>
-                                    @foreach (var module in submissionInfo.SelectedModules) // Ensure this references the correct list
+                                    @foreach (var module in submissionInfo.SelectedModules)
                                     {
                                         <li>@module</li>
                                     }
@@ -53,15 +52,18 @@
 
                                 @if (submissionInfo.ApprovalProcess != null)
                                 {
-                                <p><strong>Feedback:</strong> @submissionInfo.ApprovalProcess.Feedback</p>
-                                <p><strong>Approved/Rejected On:</strong> @submissionInfo.ApprovalProcess.ApprovalDate.ToString("dd MMM yyyy")</p>
-                                <p><strong>Program Coordinator:</strong> @submissionInfo.ApprovalProcess.Coordinator.CoordinatorName @submissionInfo.ApprovalProcess.Coordinator.CoordinatorSurname</p>
-                                <p><strong>Academic Manager:</strong> @submissionInfo.ApprovalProcess.Manager.ManagerName @submissionInfo.ApprovalProcess.Manager.ManagerSurname</p>
+                                    <p><strong>Feedback:</strong> @submissionInfo.ApprovalProcess.Feedback</p>
+                                    <p><strong>Approved/Rejected On:</strong> @submissionInfo.ApprovalProcess.ApprovalDate.ToString("dd MMM yyyy")</p>
+                                    <p><strong>Program Coordinator:</strong> @submissionInfo.ApprovalProcess.Coordinator?.CoordinatorName @submissionInfo.ApprovalProcess.Coordinator?.CoordinatorSurname</p>
+                                    <p><strong>Academic Manager:</strong> @submissionInfo.ApprovalProcess.Manager?.ManagerName @submissionInfo.ApprovalProcess.Manager?.ManagerSurname</p>
                                 }
-
+                                else
+                                {
+                                    <p><strong>Approval Process:</strong> Not yet started</p>
+                                }
                                 <div class="progress">
-                                    <div class="progress-bar @GetProgressBarClass(submissionInfo.ApprovalProcess.ApprovalStatus)" role="progressbar" style="width: @(GetProgressPercentage(submissionInfo.ApprovalProcess.ApprovalStatus))%" aria-valuenow="@GetProgressPercentage(submissionInfo.ApprovalProcess.ApprovalStatus)" aria-valuemin="0" aria-valuemax="100">
-                                        @submissionInfo.ApprovalProcess.ApprovalStatus
+                                    <div class="progress-bar @GetProgressBarClass(submissionInfo.Claim.Status)" role="progressbar" style="width: @(GetProgressPercentage(submissionInfo.Claim.Status))%" aria-valuenow="@GetProgressPercentage(submissionInfo.Claim.Status)" aria-valuemin="0" aria-valuemax="100">
+                                        @submissionInfo.Claim.Status
                                     </div>
                                 </div>
                             </div>
@@ -79,7 +81,7 @@
             </div>
         }
     </div>
-</div>
+
 
 
 @functions {

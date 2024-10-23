@@ -17,12 +17,6 @@
     }
 </div>
 
-@if (TempData["SuccessMessage"] != null)
-{
-    <div class="alert alert-success">
-        @TempData["SuccessMessage"]
-    </div>
-}
 
 <form asp-action="Submit" method="post" enctype="multipart/form-data" onsubmit="return validateForm()">
     <div class="form-group">
