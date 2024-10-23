@@ -194,6 +194,16 @@ namespace Contract_Monthly_Claim_System.Controllers
         new Claim(ClaimTypes.NameIdentifier, user.userID.ToString()) // Add the user ID claim
     };
 
+            // Add specific claims for Coordinators and Managers
+            if (user.Role == "Programme Coordinator")
+            {
+                claims.Add(new Claim("CoordinatorID", user.userID.ToString())); // Add CoordinatorID claim
+            }
+            else if (user.Role == "Academic Manager")
+            {
+                claims.Add(new Claim("ManagerID", user.userID.ToString())); // Add ManagerID claim
+            }
+
             var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var authProperties = new AuthenticationProperties
             {
@@ -204,28 +214,7 @@ namespace Contract_Monthly_Claim_System.Controllers
             // Sign in the user
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity), authProperties);
 
-            // Log the user ID and claims
-            Console.WriteLine($"User ID: {user.userID}");
-            Console.WriteLine($"Claims: {string.Join(", ", claims.Select(c => $"{c.Type}: {c.Value}"))}");
-
-            // Redirect to the appropriate landing page based on role
-            if (user.Role == "Lecturer")
-            {
-                return RedirectToAction("Index", "Home");
-            }
-            else if (user.Role == "Programme Coordinator")
-            {
-                return RedirectToAction("Index", "Home");
-            }
-            else if (user.Role == "Academic Manager")
-            {
-                return RedirectToAction("Index", "Home");
-            }
-            else
-            {
-                // Default action if role is not recognized
-                return RedirectToAction("Index", "Home");
-            }
+            return RedirectToAction("Index", "Home");
         }
 
 
@@ -456,12 +445,13 @@ namespace Contract_Monthly_Claim_System.Controllers
 
         public async Task<IActionResult> VerifyClaims()
         {
-            // Retrieve claims that need to be verified (e.g., pending claims)
+            // Retrieve claims that are pending approval
             var pendingClaims = await _context.Claims
                                               .Include(c => c.Lecturer) // Ensure Lecturer is loaded
                                               .Include(c => c.ClaimsModules)
                                                   .ThenInclude(cm => cm.Module) // Include related modules
                                               .Include(c => c.SupportingDocuments) // Include documents
+                                              .Include(c => c.ApprovalProcesses) // Include approvals
                                               .Where(c => c.Status == "Pending")
                                               .ToListAsync();
 
@@ -469,42 +459,123 @@ namespace Contract_Monthly_Claim_System.Controllers
             return View(pendingClaims);
         }
 
+        // Approve Claim
         [HttpPost]
-        public async Task<IActionResult> ApproveClaim(int claimId)
+        public async Task<IActionResult> ApproveClaim(int claimId, string feedback)
         {
-            var claim = await _context.Claims.FindAsync(claimId);
+            // Fetch the claim from the database
+            var claim = await _context.Claims
+                .Include(c => c.ApprovalProcesses)
+                .FirstOrDefaultAsync(c => c.ClaimID == claimId);
+
             if (claim == null)
             {
                 return NotFound("Claim not found.");
             }
 
-            // Update the claim status and approval process
-            claim.Status = "Approved";
+            // Retrieve the CoordinatorID and ManagerID from user claims
+            var coordinatorIdString = User.FindFirst("CoordinatorID")?.Value;
+            var managerIdString = User.FindFirst("ManagerID")?.Value;
 
-            // Update the database
+            Console.WriteLine($"CoordinatorID: {coordinatorIdString}, ManagerID: {managerIdString}");
+
+            // Check if the user has the necessary role (Coordinator or Manager)
+            if (coordinatorIdString == null && managerIdString == null)
+            {
+                return BadRequest("User is neither a Coordinator nor a Manager.");
+            }
+
+            int coordinatorId = coordinatorIdString != null ? int.Parse(coordinatorIdString) : 1; // Default to 1 if null
+            int managerId = managerIdString != null ? int.Parse(managerIdString) : 1; // Default to 1 if null
+
+            if (coordinatorId <= 0  || coordinatorId >= 2)
+            {
+                coordinatorId = 1; // Fallback to default ID
+            }
+
+            if (managerId <= 0 || managerId >= 2)
+            {
+                managerId = 1; // Fallback to default ID
+            }
+
+            var approvalProcess = new ApprovalProcess
+            {
+                ClaimID = claimId,
+                ApprovalStatus = "Approved",
+                ApprovalDate = DateTime.Now,
+                CoordinatorID = coordinatorId,
+                ManagerID = managerId,
+                Feedback = feedback
+            };
+
+            _context.ApprovalProcesses.Add(approvalProcess);
+
+            // Set claim status to Approved
+            claim.Status = "Approved";
+            claim.RejectionFeedback = feedback;  // Update rejection feedback in case it was previously rejected
+
+            _context.Update(claim);
             await _context.SaveChangesAsync();
 
-            return RedirectToAction("VerifyClaims");
+            return RedirectToAction("VerifyClaims"); // Redirect back to claims page
         }
 
         [HttpPost]
         public async Task<IActionResult> RejectClaim(int claimId, string feedback)
         {
-            var claim = await _context.Claims.FindAsync(claimId);
+            // Fetch the claim from the database
+            var claim = await _context.Claims
+                .Include(c => c.ApprovalProcesses)
+                .FirstOrDefaultAsync(c => c.ClaimID == claimId);
+
             if (claim == null)
             {
                 return NotFound("Claim not found.");
             }
 
-            // Update the claim status and save feedback
+            // Retrieve the CoordinatorID and ManagerID from user claims
+            var coordinatorIdString = User.FindFirst("CoordinatorID")?.Value;
+            var managerIdString = User.FindFirst("ManagerID")?.Value;
+
+            // Check if the user has the necessary role (Coordinator or Manager)
+            if (coordinatorIdString == null && managerIdString == null)
+            {
+                return BadRequest("User is neither a Coordinator nor a Manager.");
+            }
+
+            int coordinatorId = coordinatorIdString != null ? int.Parse(coordinatorIdString) : 1; // Default to 1 if null
+            int managerId = managerIdString != null ? int.Parse(managerIdString) : 1; // Default to 1 if null
+
+            if (coordinatorId <= 0 || coordinatorId >= 2)
+            {
+                coordinatorId = 1; // Fallback to default ID
+            }
+
+            if (managerId <= 0 || managerId >= 2)
+            {
+                managerId = 1; // Fallback to default ID
+            }
+
+            var approvalProcess = new ApprovalProcess
+            {
+                ClaimID = claimId,
+                ApprovalStatus = "Rejected",
+                ApprovalDate = DateTime.Now,
+                CoordinatorID = coordinatorId,
+                ManagerID = managerId,
+                Feedback = feedback
+            };
+
+            _context.ApprovalProcesses.Add(approvalProcess);
+
+            // Set claim status to Rejected
             claim.Status = "Rejected";
-            // Assuming you have a field for RejectionFeedback in your Claims model
             claim.RejectionFeedback = feedback;
 
-            // Update the database
+            _context.Update(claim);
             await _context.SaveChangesAsync();
 
-            return RedirectToAction("VerifyClaims");
+            return RedirectToAction("VerifyClaims"); // Redirect back to the verification page
         }
 
 

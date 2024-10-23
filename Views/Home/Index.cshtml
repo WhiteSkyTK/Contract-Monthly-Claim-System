@@ -1,4 +1,4 @@
-﻿@model Contract_Monthly_Claim_System.Models.SubmitClaimsViewModel
+﻿    @model Contract_Monthly_Claim_System.Models.SubmitClaimsViewModel
 @{
     ViewData["Title"] = "Welcome Page";
 }
@@ -49,10 +49,10 @@
             <p>Error: Program Coordinator not found.</p>
         }
     }
-    // Check if the user is a Academic Manager
+    // Check if the user is an Academic Manager
     else if (User.IsInRole("Academic Manager"))
     {
-        var manager = Model.AcademicManager; // Ensure the Coordinator is fetched from the model
+        var manager = Model.AcademicManager; // Ensure the Manager is fetched from the model
 
         if (manager != null)
         {
@@ -68,7 +68,7 @@
         }
         else
         {
-            <p>Error: "Academic Manager not found.</p>
+            <p>Error: Academic Manager not found.</p>
         }
     }
     else
@@ -78,25 +78,36 @@
 }
 else
 {
-    <div class="login-container">
-        <div class="login-box">
-            <h1 class="login-title">Welcome, Guest!</h1>
-            <p class="login-subtitle">
-                Welcome to our Contract Monthly Claims System! This platform helps lecturers submit claims for hours worked, and program coordinators to review and approve them in real-time.
-                <br /><br />
-                If you're a registered lecturer or program coordinator, you can log in to submit or review claims.
-                <br /><br />
-                Our goal is to make your work smoother and your claim submissions easier, with real-time tracking of claim statuses!
-            </p>
+    <div class="container page-background">
+        <div class="login-container">
+            <div class="login-box">
+                <h1 class="login-title">Welcome, Guest!</h1>
+                <p class="login-subtitle">
+                    Welcome to our Contract Monthly Claims System! This platform helps lecturers submit claims for hours worked, and program coordinators to review and approve them in real-time.
+                    <br /><br />
+                    If you're a registered lecturer or program coordinator, you can log in to submit or review claims.
+                    <br /><br />
+                    Our goal is to make your work smoother and your claim submissions easier, with real-time tracking of claim statuses!
+                </p>
 
-            <!-- Login button -->
-            <a class="btn btn-primary login-btn" asp-controller="Home" asp-action="Login">Log In</a>
+                <!-- Login button -->
+                <a class="btn btn-primary login-btn" asp-controller="Home" asp-action="Login">Log In</a>
+            </div>
         </div>
     </div>
 }
 
+
 <!-- Custom styles for the welcome page -->
 <style>
+    .page-background {
+        background-image: url("../../wwwroot/Images/BG2.jpg");
+        background-size: cover;
+        background-position: center;
+        min-height: 100vh;
+        padding: 20px;
+    }
+
     .login-container {
         display: flex;
         justify-content: center;
@@ -167,3 +178,4 @@ else
                 text-decoration: underline;
             }
 </style>
+

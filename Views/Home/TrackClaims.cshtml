@@ -54,6 +54,7 @@
                                 <p><strong>Hours Worked:</strong> @claim.HoursWorked</p>
                                 <p><strong>Hourly Rate:</strong> R @claim.HourlyRate.ToString("F2")</p>
                                 <p><strong>Total Amount:</strong> R @claim.TotalClaimAmount</p>
+                                
                                 <div class="progress">
                                     <div class="progress-bar @GetProgressBarClass(claim.Status)" role="progressbar" style="width: @(GetProgressPercentage(claim.Status))%" aria-valuenow="@GetProgressPercentage(claim.Status)" aria-valuemin="0" aria-valuemax="100">
                                         @claim.Status
@@ -94,7 +95,7 @@
         {
             "Pending" => 50,
             "Approved" => 100,
-            "Rejected" => 0,
+            "Rejected" => 95,
             _ => 0
         };
     }

@@ -36,4 +36,14 @@
     </Content>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\Images\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="wwwroot\Images\BG1.jpg" />
+    <None Include="wwwroot\Images\BG2.jpg" />
+    <None Include="wwwroot\Images\Logo.png" />
+  </ItemGroup>
+
 </Project>

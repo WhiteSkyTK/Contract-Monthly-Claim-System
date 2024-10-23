@@ -25,7 +25,7 @@ namespace Contract_Monthly_Claim_System.Models
 
         [Column(TypeName = "decimal(18,2)")]
         public decimal TotalClaimAmount { get; set; }
-        public string RejectionFeedback { get; set; }
+        public string? RejectionFeedback { get; set; }
 
         public ICollection<ClaimsModules> ClaimsModules { get; set; } = new List<ClaimsModules>();
         public ICollection<ApprovalProcess> ApprovalProcesses { get; set; } = new List<ApprovalProcess>();
