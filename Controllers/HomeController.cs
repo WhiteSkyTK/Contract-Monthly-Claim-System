@@ -580,7 +580,6 @@ namespace Contract_Monthly_Claim_System.Controllers
 
 
         // Change Track to TrackClaims to retrieve claims with related data
-        // Change Track to TrackClaims to retrieve claims with related data
         public async Task<IActionResult> TrackClaims()
         {
             if (!User.Identity.IsAuthenticated)
@@ -588,43 +587,37 @@ namespace Contract_Monthly_Claim_System.Controllers
                 return RedirectToAction("Login", "Home");
             }
 
-            // Retrieve the user ID from the claims
             var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            Console.WriteLine($"User ID String: '{userIdString}'"); // Debugging log
-
             if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
             {
                 return BadRequest("Invalid user ID.");
             }
 
-            // Retrieve claims associated with the lecturer, including related approval process data
-            var claims = await _context.Claims
-                .Include(c => c.ClaimsModules)
-                    .ThenInclude(cm => cm.Module)
-                .Include(c => c.ApprovalProcesses) // Including approval processes related to the claim
-                    .ThenInclude(ap => ap.Coordinator) // Include Programme Coordinator info
-                .Include(c => c.ApprovalProcesses)
-                    .ThenInclude(ap => ap.Manager) // Include Academic Manager info
-                .Where(c => c.LecturerID == userId)
-                .ToListAsync();
-
-            if (claims == null || !claims.Any())
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null)
             {
-                return NotFound("No claims found for this lecturer.");
+                return NotFound("User not found.");
             }
 
-            // Retrieve lecturer information based on user ID
-            var lecturer = await _context.Lecturers.FindAsync(userId);
+            var lecturer = await _context.Lecturers
+                .FirstOrDefaultAsync(l => l.LecturerEmail == user.Username);
 
             if (lecturer == null)
             {
                 return NotFound("Lecturer not found.");
             }
 
-            // Log the lecturer ID
-            Console.WriteLine($"User ID: {lecturer.LecturerID}");
+            var claims = await _context.Claims
+                .Include(c => c.ClaimsModules)
+                    .ThenInclude(cm => cm.Module)
+                .Include(c => c.ApprovalProcesses)
+                    .ThenInclude(ap => ap.Coordinator)
+                .Include(c => c.ApprovalProcesses)
+                    .ThenInclude(ap => ap.Manager)
+                .Where(c => c.LecturerID == lecturer.LecturerID)
+                .ToListAsync();
 
-            // Create a list of ClaimSubmissionInfo objects to pass to the view
+            // Create a list of ClaimSubmissionInfo objects
             var claimSubmissionInfos = claims.Select(c => new ClaimSubmissionInfo
             {
                 LecturerID = lecturer.LecturerID,
@@ -633,7 +626,7 @@ namespace Contract_Monthly_Claim_System.Controllers
                 LecturerPhone = lecturer.LecturerPhone,
                 LecturerEmail = lecturer.LecturerEmail,
                 Claim = c,
-                ApprovalProcess = c.ApprovalProcesses.FirstOrDefault(), // Assuming one approval process per claim
+                ApprovalProcess = c.ApprovalProcesses.FirstOrDefault(),
                 Modules = c.ClaimsModules.Select(cm => cm.Module.ModuleName).ToList(),
                 SelectedModules = c.ClaimsModules.Select(cm => cm.Module.ModuleName).ToList()
             }).ToList();
@@ -642,6 +635,7 @@ namespace Contract_Monthly_Claim_System.Controllers
             ViewBag.ClaimSubmissionInfos = claimSubmissionInfos; // Using ViewBag to pass claims to the view
             return View(claimSubmissionInfos); // Pass the list to the view
         }
+
 
         // Change this method to redirect to TrackClaims
         public IActionResult Track()

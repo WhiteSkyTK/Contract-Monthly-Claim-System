@@ -1,13 +1,9 @@
 ﻿@model List<ClaimSubmissionInfo>
 @using System.Security.Claims
 @using System.Linq
+@using Contract_Monthly_Claim_System.Context; 
 
-@{
-    ViewData["Title"] = "Track Claims";
-    var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier); // Get the current user's ID
-    var userId = userIdString; // Keep as a string
-    var claimSubmissionInfos = ViewBag.ClaimSubmissionInfos as List<ClaimSubmissionInfo>; // Cast ViewBag.Claims to the correct type
-}
+@inject Contract_Monthly_Claim_System.Context.ApplicationDbContext DbContext 
 
 <div class="container">
     <h1 class="text-center">Track Your Claims</h1>
@@ -18,58 +14,79 @@
     </div>
 
     <div id="claimsContainer" class="row list-view">
-        @if (claimSubmissionInfos != null && claimSubmissionInfos.Any())
+        @if (Model != null && Model.Any())
         {
-            var userClaims = claimSubmissionInfos.Where(c => c.LecturerID.ToString() == userId);
+            // Get the user ID
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            int userId = int.Parse(userIdClaim);
+            // Retrieve the user's email
+            var userEmail = DbContext.Users.FirstOrDefault(u => u.userID == userId)?.Username;
 
-            if (!userClaims.Any())
+            if (userEmail != null)
+            {
+                // Get the corresponding LecturerID using the user's email
+                var lecturerId = DbContext.Lecturers.FirstOrDefault(l => l.LecturerEmail == userEmail)?.LecturerID;
+
+                // Filter the claims based on the LecturerID
+                var userClaims = Model.Where(c => c.LecturerID == lecturerId);
+
+                if (!userClaims.Any())
+                {
+                    <div class="col-12">
+                        <div class="alert alert-info" role="alert">
+                            No claims found for you. Please submit your claims to track their status.
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    foreach (var submissionInfo in userClaims)
+                    {
+                        <div class="col-md-12 mb-4 claim-item">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Claim ID: @submissionInfo.Claim.ClaimID</h5>
+                                    <p><strong>Status:</strong> <span class="status-text">@submissionInfo.Claim.Status</span></p>
+                                    <p><strong>Modules:</strong></p>
+                                    <ul>
+                                        @foreach (var module in submissionInfo.SelectedModules)
+                                        {
+                                            <li>@module</li>
+                                        }
+                                    </ul>
+                                    <p><strong>Hours Worked:</strong> @submissionInfo.Claim.HoursWorked</p>
+                                    <p><strong>Hourly Rate:</strong> R @submissionInfo.Claim.HourlyRate.ToString("F2")</p>
+                                    <p><strong>Total Amount:</strong> R @submissionInfo.Claim.TotalClaimAmount</p>
+
+                                    @if (submissionInfo.ApprovalProcess != null)
+                                    {
+                                        <p><strong>Feedback:</strong> @submissionInfo.ApprovalProcess.Feedback ?? "No feedback provided"</p>
+                                        <p><strong>Approved/Rejected On:</strong> @submissionInfo.ApprovalProcess.ApprovalDate.ToString("dd MMM yyyy")</p>
+                                        <p><strong>Program Coordinator:</strong> @submissionInfo.ApprovalProcess.Coordinator?.CoordinatorName @submissionInfo.ApprovalProcess.Coordinator?.CoordinatorSurname</p>
+                                        <p><strong>Academic Manager:</strong> @submissionInfo.ApprovalProcess.Manager?.ManagerName @submissionInfo.ApprovalProcess.Manager?.ManagerSurname</p>
+                                    }
+                                    else
+                                    {
+                                        <p><strong>Approval Process:</strong> Not yet started</p>
+                                    }
+                                    <div class="progress">
+                                        <div class="progress-bar @GetProgressBarClass(submissionInfo.Claim.Status)" role="progressbar" style="width: @(GetProgressPercentage(submissionInfo.Claim.Status))%" aria-valuenow="@GetProgressPercentage(submissionInfo.Claim.Status)" aria-valuemin="0" aria-valuemax="100">
+                                            @submissionInfo.Claim.Status
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+            }
+            else
             {
                 <div class="col-12">
                     <div class="alert alert-info" role="alert">
                         No claims found for you. Please submit your claims to track their status.
                     </div>
                 </div>
-            }
-            else
-            {
-                foreach (var submissionInfo in userClaims)
-                {
-                    <div class="col-md-12 mb-4 claim-item">
-                        <div class="card">
-                            <div class="card-body">
-                                <h5 class="card-title">Claim ID: @submissionInfo.Claim.ClaimID</h5>
-                                <p><strong>Status:</strong> <span class="status-text">@submissionInfo.Claim.Status</span></p>
-                                <p><strong>Modules:</strong></p>
-                                <ul>
-                                    @foreach (var module in submissionInfo.SelectedModules)
-                                    {
-                                        <li>@module</li>
-                                    }
-                                </ul>
-                                <p><strong>Hours Worked:</strong> @submissionInfo.Claim.HoursWorked</p>
-                                <p><strong>Hourly Rate:</strong> R @submissionInfo.Claim.HourlyRate.ToString("F2")</p>
-                                <p><strong>Total Amount:</strong> R @submissionInfo.Claim.TotalClaimAmount</p>
-
-                                @if (submissionInfo.ApprovalProcess != null)
-                                {
-                                    <p><strong>Feedback:</strong> @submissionInfo.ApprovalProcess.Feedback</p>
-                                    <p><strong>Approved/Rejected On:</strong> @submissionInfo.ApprovalProcess.ApprovalDate.ToString("dd MMM yyyy")</p>
-                                    <p><strong>Program Coordinator:</strong> @submissionInfo.ApprovalProcess.Coordinator?.CoordinatorName @submissionInfo.ApprovalProcess.Coordinator?.CoordinatorSurname</p>
-                                    <p><strong>Academic Manager:</strong> @submissionInfo.ApprovalProcess.Manager?.ManagerName @submissionInfo.ApprovalProcess.Manager?.ManagerSurname</p>
-                                }
-                                else
-                                {
-                                    <p><strong>Approval Process:</strong> Not yet started</p>
-                                }
-                                <div class="progress">
-                                    <div class="progress-bar @GetProgressBarClass(submissionInfo.Claim.Status)" role="progressbar" style="width: @(GetProgressPercentage(submissionInfo.Claim.Status))%" aria-valuenow="@GetProgressPercentage(submissionInfo.Claim.Status)" aria-valuemin="0" aria-valuemax="100">
-                                        @submissionInfo.Claim.Status
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                }
             }
         }
         else
@@ -81,7 +98,7 @@
             </div>
         }
     </div>
-
+</div>
 
 
 @functions {
