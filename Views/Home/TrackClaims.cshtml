@@ -51,7 +51,7 @@
                                 <p><strong>Hourly Rate:</strong> R @submissionInfo.Claim.HourlyRate.ToString("F2")</p>
                                 <p><strong>Total Amount:</strong> R @submissionInfo.Claim.TotalClaimAmount</p>
 
-                                if (claim.ApprovalProcess != null) 
+                                @if (submissionInfo.ApprovalProcess != null)
                                 {
                                 <p><strong>Feedback:</strong> @submissionInfo.ApprovalProcess.Feedback</p>
                                 <p><strong>Approved/Rejected On:</strong> @submissionInfo.ApprovalProcess.ApprovalDate.ToString("dd MMM yyyy")</p>
