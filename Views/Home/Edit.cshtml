@@ -1,63 +1,146 @@
 ﻿@model Contract_Monthly_Claim_System.Models.EditViewModel
+
 @{
-    ViewData["Title"] = "Edit User Details";
+    ViewData["Title"] = "User Management";
 }
 
 <div class="container page-background">
     <div class="login-container">
-        <div class="login-box">
-            <h1 class="login-title">Edit User Details</h1>
-            <p class="login-subtitle">Search and update information for Lecturers, Programme Coordinators, or Academic Managers.</p>
+        <div class="login-box fade-in">
+            <h1 class="login-title">User Management</h1>
+            <p class="login-subtitle">Overview of all users categorized by their roles.</p>
 
-            <!-- Search Section -->
-            <form asp-action="Edit" method="post">
-                <div class="form-group mb-3">
-                    <label for="searchTerm" class="form-label">Search User (Name or Email)</label>
-                    <input type="text" name="SearchTerm" class="form-control" placeholder="Enter name or email to search..." required />
-                    <span asp-validation-for="SearchTerm" class="text-danger"></span>
-                </div>
-                <button type="submit" class="btn btn-primary w-100">Search</button>
-            </form>
+            <!-- User Management Section -->
+            <div class="user-management-section">
+                <h2 class="all-users-title">All Users</h2>
 
-            <hr class="my-4">
+                <!-- Display all Users grouped by Role -->
+                @if (Model.Lecturers.Any())
+                {
+                    <h3>Lecturers</h3>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var user in Model.Lecturers)
+                            {
+                                <tr>
+                                    <td>@($"{user.LecturerName} {user.LecturerSurname}")</td>
+                                    <td>@user.LecturerEmail</td>
+                                    <td>@user.LecturerPhone</td>
+                                    <td>
+                                        <form asp-action="Edit" method="get">
+                                            <input type="hidden" name="userId" value="@user.LecturerID" />
+                                            <button type="submit" class="btn btn-secondary animated-btn">Edit</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <p>No Lecturers found in the database.</p>
+                }
 
-            <!-- Display/Edit Section -->
-            @if (Model.UserFound)
-            {
-                <h2 class="mt-4">User Details</h2>
-                <form asp-action="UpdateUser" method="post">
-                    <div class="form-group mb-3">
-                        <label>Name</label>
-                        <input type="text" name="Name" class="form-control" value="@Model.User.Name" required />
-                        <span asp-validation-for="User.Name" class="text-danger"></span>
-                    </div>
-                    <div class="form-group mb-3">
-                        <label>Email</label>
-                        <input type="email" name="Email" class="form-control" value="@Model.User.Email" required />
-                        <span asp-validation-for="User.Email" class="text-danger"></span>
-                    </div>
-                    <div class="form-group mb-3">
-                        <label>Role</label>
-                        <select name="Role" class="form-control" required>
-                            <option value="Lecturer" selected="@(Model.User.Role == "Lecturer")">Lecturer</option>
-                            <option value="Programme Coordinator" selected="@(Model.User.Role == "Programme Coordinator")">Programme Coordinator</option>
-                            <option value="Academic Manager" selected="@(Model.User.Role == "Academic Manager")">Academic Manager</option>
-                        </select>
-                        <span asp-validation-for="User.Role" class="text-danger"></span>
-                    </div>
-                    <button type="submit" class="btn btn-success w-100">Save Changes</button>
-                </form>
-            }
-            else if (Model.SearchPerformed)
-            {
-                <p class="text-danger mt-3">User not found. Please check the name or email and try again.</p>
-            }
+                @if (Model.ProgrammeCoordinators.Any())
+                {
+                    <h3>Programme Coordinators</h3>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var user in Model.ProgrammeCoordinators)
+                            {
+                                <tr>
+                                    <td>@($"{user.CoordinatorName} {user.CoordinatorSurname}")</td>
+                                    <td>@user.CoordinatorEmail</td>
+                                    <td>@user.CoordinatorPhone</td>
+                                    <td>
+                                        <form asp-action="Edit" method="get">
+                                            <input type="hidden" name="userId" value="@user.CoordinatorID" />
+                                            <button type="submit" class="btn btn-secondary animated-btn">Edit</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <p>No Programme Coordinators found in the database.</p>
+                }
+
+                @if (Model.AcademicManagers.Any())
+                {
+                    <h3>Academic Managers</h3>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var user in Model.AcademicManagers)
+                            {
+                                <tr>
+                                    <td>@($"{user.ManagerName} {user.ManagerSurname}")</td>
+                                    <td>@user.ManagerEmail</td>
+                                    <td>@user.ManagerPhone</td>
+                                    <td>
+                                        <form asp-action="Edit" method="get">
+                                            <input type="hidden" name="userId" value="@user.ManagerID" />
+                                            <button type="submit" class="btn btn-secondary animated-btn">Edit</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <p>No Academic Managers found in the database.</p>
+                }
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Custom CSS for Edit page to match existing styles -->
+<!-- Custom CSS for User Management to match existing styles -->
 <style>
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .fade-in {
+        animation: fadeIn 1s ease;
+    }
+
     .page-background {
         background-color: #f7f9fc;
         padding: 20px;
@@ -76,7 +159,7 @@
         padding: 2rem;
         border-radius: 10px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        max-width: 500px;
+        max-width: 800px;
         width: 100%;
         text-align: center;
     }
@@ -94,49 +177,64 @@
         margin-bottom: 2rem;
     }
 
-    .form-control {
+    .user-management-section {
+        margin-top: 2rem;
+        text-align: left;
+    }
+
+    .all-users-title {
+        text-align: center;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 1.5rem;
+        color: #333;
+        text-decoration: underline;
+        margin-bottom: 1.5rem;
+    }
+
+    table {
+        width: 100%;
+        margin-top: 1rem;
+        border-collapse: collapse;
+        animation: fadeIn 0.8s ease; /* Added animation to tables */
+    }
+
+    th, td {
+        padding: 1rem;
         border: 1px solid #dddddd;
-        padding: 0.75rem;
-        margin-bottom: 1rem;
-        border-radius: 5px;
-        font-family: 'Open Sans', sans-serif;
+        text-align: left;
+        transition: background-color 0.3s ease; /* Animation for hover effect */
     }
 
-    .btn-primary {
-        background-color: #DE1B38;
+    th {
+        background-color: #f2f2f2;
+    }
+
+    td:hover {
+        background-color: #f9f9f9; /* Subtle background on hover */
+    }
+
+    .animated-btn {
+        background-color: #DE1B38; /* Match button color to previous styles */
         color: #ffffff;
         border: none;
         padding: 0.75rem 2rem;
         font-size: 1rem;
         border-radius: 5px;
         cursor: pointer;
-        transition: background-color 0.3s ease;
+        transition: background-color 0.3s ease, transform 0.2s ease; /* Added transform for hover effect */
         width: 100%;
     }
 
-        .btn-primary:hover {
-            background-color: #87071a;
-        }
-
-    .btn-success {
-        background-color: #28a745;
-        color: #ffffff;
-        border: none;
-        padding: 0.75rem 2rem;
-        font-size: 1rem;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-        width: 100%;
+    .animated-btn:hover {
+        background-color: #87071a; /* Darker shade on hover */
+        transform: translateY(-2px); /* Subtle lift on hover */
     }
 
-        .btn-success:hover {
-            background-color: #218838;
-        }
+    .user-management-section h3 {
+        color: #333;
+    }
+
+    .user-management-section p {
+        color: #666666;
+    }
 </style>
-
-@section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
-}

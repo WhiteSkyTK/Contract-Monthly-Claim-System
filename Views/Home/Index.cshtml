@@ -1,4 +1,4 @@
-﻿    @model Contract_Monthly_Claim_System.Models.SubmitClaimsViewModel
+﻿@model Contract_Monthly_Claim_System.Models.SubmitClaimsViewModel
 @{
     ViewData["Title"] = "Welcome Page";
 }
@@ -12,7 +12,7 @@
 
         if (lecturer != null)
         {
-            <div class="login-container">
+            <div class="login-container fade-in">
                 <div class="login-box">
                     <h1 class="login-title">Welcome Back, @lecturer.LecturerName @lecturer.LecturerSurname!</h1>
                     <p class="login-subtitle">We're glad to have you back. Ready to submit your claims?</p>
@@ -34,7 +34,7 @@
 
         if (coordinator != null)
         {
-            <div class="login-container">
+            <div class="login-container fade-in">
                 <div class="login-box">
                     <h1 class="login-title">Welcome Back, @coordinator.CoordinatorName @coordinator.CoordinatorSurname!</h1>
                     <p class="login-subtitle">Ready to review and approve claims?</p>
@@ -56,7 +56,7 @@
 
         if (manager != null)
         {
-            <div class="login-container">
+            <div class="login-container fade-in">
                 <div class="login-box">
                     <h1 class="login-title">Welcome Back, @manager.ManagerName @manager.ManagerSurname!</h1>
                     <p class="login-subtitle">Ready to review and approve claims?</p>
@@ -71,14 +71,14 @@
             <p>Error: Academic Manager not found.</p>
         }
     }
-    // Check if the user is an HR
+    // Check if the user is HR
     else if (User.IsInRole("HR"))
     {
         var hr = Model.HR; // Ensure the HR object is fetched from the model
 
         if (hr != null)
         {
-            <div class="login-container">
+            <div class="login-container fade-in">
                 <div class="login-box">
                     <h1 class="login-title">Welcome Back, @hr.HRName @hr.HRSurname!</h1>
                     <p class="login-subtitle">Manage employee records and oversee claims processing.</p>
@@ -100,7 +100,7 @@
 }
 else
 {
-    <div class="container page-background">
+    <div class="container page-background fade-in">
         <div class="login-container">
             <div class="login-box">
                 <h1 class="login-title">Welcome, Guest!</h1>
@@ -119,26 +119,36 @@ else
     </div>
 }
 
-
 <!-- Custom styles for the welcome page -->
 <style>
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .page-background {
+        background-color: #f7f9fc; /* Light gray background */
+        min-height: 100vh;
+        padding: 20px;
+        animation: fadeIn 1s ease; /* Fade-in animation for the page */
+    }
 
     .login-container {
         display: flex;
         justify-content: center;
         align-items: center;
         height: 100vh;
-        background-color: #f7f9fc;
     }
 
     .login-box {
         background-color: #ffffff;
         padding: 2rem;
         border-radius: 10px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
         max-width: 500px;
         width: 100%;
         text-align: center;
+        animation: fadeIn 1.2s ease; /* Fade-in animation for the box */
     }
 
     .login-title {
@@ -153,14 +163,6 @@ else
         margin-bottom: 2rem;
     }
 
-    .form-control {
-        border: 1px solid #dddddd;
-        padding: 0.75rem;
-        margin-bottom: 1rem;
-        border-radius: 5px;
-        font-family: 'Open Sans', sans-serif;
-    }
-
     .login-btn, .submit-btn {
         background-color: #DE1B38;
         color: #ffffff;
@@ -169,28 +171,50 @@ else
         font-size: 1rem;
         border-radius: 5px;
         cursor: pointer;
-        transition: background-color 0.3s ease;
+        transition: background-color 0.3s ease, transform 0.2s ease; /* Added transform for hover effect */
         width: 100%;
         text-decoration: none;
         display: inline-block;
+        position: relative; /* For letter animation */
     }
 
-        .login-btn:hover, .submit-btn:hover {
-            background-color: #87071a;
-        }
+    .login-btn:hover, .submit-btn:hover {
+        background-color: #87071a; /* Darker shade on hover */
+        transform: translateY(-2px); /* Subtle lift on hover */
+    }
+
+    .login-btn:active, .submit-btn:active {
+        transform: translateY(2px); /* Push down effect when clicked */
+        transition: transform 0.1s; /* Smooth click transition */
+    }
+
+    /* Letter animation */
+    .login-btn::before, .submit-btn::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 0;
+        top: 0;
+        opacity: 0; /* Start invisible */
+        transition: opacity 0.3s ease;
+        color: #ffffff;
+        font-weight: bold;
+    }
+
+    .login-btn:hover::before, .submit-btn:hover::before {
+        opacity: 1; /* Fade in on hover */
+    }
 
     .login-footer {
         text-align: center;
         margin-top: 2rem;
     }
 
-        .login-footer a {
-            color: #007bff;
-            text-decoration: none;
-        }
+    .login-footer a {
+        color: #007bff;
+        text-decoration: none;
+    }
 
-            .login-footer a:hover {
-                text-decoration: underline;
-            }
+    .login-footer a:hover {
+        text-decoration: underline;
+    }
 </style>
-

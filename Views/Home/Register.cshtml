@@ -3,51 +3,53 @@
     ViewData["Title"] = "Register Page";
 }
 
-
-
 <!-- Centered container for the registration form -->
-<div class="register-container">
-    <div class="register-box">
-        <h1 class="register-title">Create an Account</h1>
+<div class="register-container fade-in">
+    <div class="register-box fade-in">
+        <h1 class="register-title">Create an Account (Lecturer)</h1>
         <p class="register-subtitle">Please fill in the details to create a new lecturer account</p>
 
         <!-- Registration Form -->
         <form asp-action="Register" method="post">
             <!-- Name input -->
             <div class="form-group">
-                <label for="Name">Name</label>
+                <label for="LecturerName">Name</label>
                 <input asp-for="LecturerName" class="form-control" placeholder="Enter your name" required>
                 <span asp-validation-for="LecturerName" class="text-danger"></span>
             </div>
 
             <!-- Surname input -->
             <div class="form-group">
-                <label for="Surname">Surname</label>
+                <label for="LecturerSurname">Surname</label>
                 <input asp-for="LecturerSurname" class="form-control" placeholder="Enter your surname" required>
                 <span asp-validation-for="LecturerSurname" class="text-danger"></span>
             </div>
 
             <!-- Phone number input -->
             <div class="form-group">
-                <label for="PhoneNumber">Phone Number</label>
+                <label for="LecturerPhone">Phone Number</label>
                 <input asp-for="LecturerPhone" class="form-control" placeholder="Enter your phone number" required>
                 <span asp-validation-for="LecturerPhone" class="text-danger"></span>
             </div>
 
             <!-- Email input -->
             <div class="form-group">
-                <label for="Email">Email</label>
+                <label for="LecturerEmail">Email</label>
                 <input asp-for="LecturerEmail" class="form-control" placeholder="Enter your email" required>
                 <span asp-validation-for="LecturerEmail" class="text-danger"></span>
             </div>
 
             <!-- Password input -->
             <div class="form-group">
-                <label for="Password">Password</label>
-                <input asp-for="LecturerPassword" type="password" class="form-control" placeholder="Enter your password" required>
+                <label for="LecturerPassword">Password</label>
+                <div class="password-input">
+                    <input asp-for="LecturerPassword" type="password" class="form-control" id="LecturerPassword" placeholder="Enter your password" required>
+                    <span class="toggle-password" onclick="togglePasswordVisibility()">
+                        <i class="fa fa-eye" id="toggleIcon"></i>
+                    </span>
+                </div>
                 <span asp-validation-for="LecturerPassword" class="text-danger"></span>
             </div>
-
 
             <!-- Submit button -->
             <button type="submit" class="btn btn-primary register-btn">Register</button>
@@ -57,12 +59,25 @@
 
 <!-- Custom styles for the registration page -->
 <style>
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
     .register-container {
         display: flex;
         justify-content: center;
         align-items: center;
         height: 100vh;
         background-color: #f7f9fc; /* Adjust background color to match the theme */
+        animation: fadeIn 1s ease; /* Fade-in animation for the container */
     }
 
     .register-box {
@@ -73,6 +88,7 @@
         max-width: 400px;
         width: 100%;
         text-align: center;
+        animation: fadeIn 1.2s ease; /* Fade-in animation for the box */
     }
 
     .register-title {
@@ -93,6 +109,26 @@
         margin-bottom: 1rem;
         border-radius: 5px;
         font-family: 'Open Sans', sans-serif;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease; /* Transition effect */
+    }
+
+        .form-control:focus {
+            border-color: #DE1B38; /* Change border color on focus */
+            box-shadow: 0 0 5px rgba(222, 27, 56, 0.5); /* Subtle shadow on focus */
+            outline: none; /* Remove default outline */
+        }
+
+    .password-input {
+        position: relative; /* Positioning for toggle icon */
+    }
+
+    .toggle-password {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #DE1B38;
     }
 
     .register-btn {
@@ -103,11 +139,30 @@
         font-size: 1rem;
         border-radius: 5px;
         cursor: pointer;
-        transition: background-color 0.3s ease;
+        transition: background-color 0.3s ease, transform 0.2s ease; /* Added transform for hover effect */
         width: 100%;
     }
 
         .register-btn:hover {
-            background-color: #87071a;
+            background-color: #87071a; /* Darker shade on hover */
+            transform: translateY(-2px); /* Subtle lift on hover */
         }
 </style>
+
+<!-- JavaScript for password toggle -->
+<script>
+    function togglePasswordVisibility() {
+        const passwordInput = document.getElementById('LecturerPassword');
+        const toggleIcon = document.getElementById('toggleIcon');
+
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleIcon.classList.remove('fa-eye');
+            toggleIcon.classList.add('fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            toggleIcon.classList.remove('fa-eye-slash');
+            toggleIcon.classList.add('fa-eye');
+        }
+    }
+</script>

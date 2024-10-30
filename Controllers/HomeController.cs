@@ -18,13 +18,6 @@ namespace Contract_Monthly_Claim_System.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly ApplicationDbContext _context; // Add DbContext
-        // Mock data for demonstration purposes
-        private static List<EditViewModel.UserViewModel> users = new List<EditViewModel.UserViewModel>
-        {
-            new EditViewModel.UserViewModel { Name = "John Doe", Email = "john.doe@example.com", Role = "Lecturer" },
-            new EditViewModel.UserViewModel { Name = "Jane Smith", Email = "jane.smith@example.com", Role = "Programme Coordinator" },
-            new EditViewModel.UserViewModel { Name = "Alice Johnson", Email = "alice.johnson@example.com", Role = "Academic Manager" }
-        };
 
         // Inject DbContext in the constructor
         public HomeController(ILogger<HomeController> logger, ApplicationDbContext context)
@@ -33,35 +26,39 @@ namespace Contract_Monthly_Claim_System.Controllers
             _context = context;
         }
 
-        // GET: Edit
-        public IActionResult Edit()
+        // Action to display the edit page
+        public IActionResult Edit(int? userId)
         {
-            var model = new EditViewModel();
-            return View(model);
-        }
-
-        // POST: Edit
-        [HttpPost]
-        public IActionResult Edit(EditViewModel model)
-        {
-            if (string.IsNullOrWhiteSpace(model.SearchTerm))
+            // Fetch users for display
+            var model = new EditViewModel
             {
-                ModelState.AddModelError("", "Search term cannot be empty.");
-                return View(model);
-            }
+                Lecturers = _context.Lecturers.ToList(),
+                ProgrammeCoordinators = _context.ProgrammeCoordinators.ToList(),
+                AcademicManagers = _context.AcademicManagers.ToList(),
+            };
 
-            // Simulating search for a user based on search term (could be email or name)
-            var user = users.FirstOrDefault(u => u.Email.Equals(model.SearchTerm, StringComparison.OrdinalIgnoreCase) ||
-                                                  u.Name.Equals(model.SearchTerm, StringComparison.OrdinalIgnoreCase));
-
-            if (user != null)
+            // If a user ID is provided, fetch that user for editing
+            if (userId.HasValue)
             {
-                model.User = user;
-                model.SearchPerformed = true;
-            }
-            else
-            {
-                ModelState.AddModelError("", "User not found.");
+                var userToEdit = _context.Users.Find(userId.Value);
+                if (userToEdit != null)
+                {
+                    switch (userToEdit.Role)
+                    {
+                        case "Lecturer":
+                            model.Lecturer = _context.Lecturers.Find(userToEdit.userID);
+                            break;
+                        case "ProgrammeCoordinator":
+                            model.ProgrammeCoordinator = _context.ProgrammeCoordinators.Find(userToEdit.userID);
+                            break;
+                        case "AcademicManager":
+                            model.AcademicManager = _context.AcademicManagers.Find(userToEdit.userID);
+                            break;
+                        default:
+                            // Handle unknown role
+                            break;
+                    }
+                }
             }
 
             return View(model);
@@ -71,18 +68,94 @@ namespace Contract_Monthly_Claim_System.Controllers
         [HttpPost]
         public IActionResult UpdateUser(EditViewModel model)
         {
-            if (ModelState.IsValid && model.User != null)
+            if (ModelState.IsValid)
             {
-                // Here, update the user in the database or the mock list
-                var userToUpdate = users.FirstOrDefault(u => u.Email.Equals(model.User.Email, StringComparison.OrdinalIgnoreCase));
-                if (userToUpdate != null)
+                switch (model)
                 {
-                    userToUpdate.Name = model.User.Name;
-                    userToUpdate.Role = model.User.Role; // Assuming role can be changed
+                    case { Lecturer: { } lecturer }:
+                        var lecturerToUpdate = _context.Lecturers.Find(lecturer.LecturerID);
+                        if (lecturerToUpdate != null)
+                        {
+                            lecturerToUpdate.LecturerName = lecturer.LecturerName;
+                            lecturerToUpdate.LecturerSurname = lecturer.LecturerSurname;
+                            lecturerToUpdate.LecturerEmail = lecturer.LecturerEmail;
+                            lecturerToUpdate.LecturerPhone = lecturer.LecturerPhone;
+                            // Update other properties as needed
+                            _context.SaveChanges();
+                        }
+                        break;
+
+                    case { ProgrammeCoordinator: { } coordinator }:
+                        var coordinatorToUpdate = _context.ProgrammeCoordinators.Find(coordinator.CoordinatorID);
+                        if (coordinatorToUpdate != null)
+                        {
+                            coordinatorToUpdate.CoordinatorName = coordinator.CoordinatorName;
+                            coordinatorToUpdate.CoordinatorSurname = coordinator.CoordinatorSurname;
+                            coordinatorToUpdate.CoordinatorEmail = coordinator.CoordinatorEmail;
+                            coordinatorToUpdate.CoordinatorPhone = coordinator.CoordinatorPhone;
+                            // Update other properties as needed
+                            _context.SaveChanges();
+                        }
+                        break;
+
+                    case { AcademicManager: { } manager }:
+                        var managerToUpdate = _context.AcademicManagers.Find(manager.ManagerID);
+                        if (managerToUpdate != null)
+                        {
+                            managerToUpdate.ManagerName = manager.ManagerName;
+                            managerToUpdate.ManagerSurname = manager.ManagerSurname;
+                            managerToUpdate.ManagerEmail = manager.ManagerEmail;
+                            managerToUpdate.ManagerPhone = manager.ManagerPhone;
+                            // Update other properties as needed
+                            _context.SaveChanges();
+                        }
+                        break;
                 }
-                return RedirectToAction("Index"); // Redirect to a suitable page after update
+
+                TempData["Message"] = "User updated successfully!";
+                return RedirectToAction("Edit");
             }
+
+            // If model state is invalid, return to the same view with the current model
             return View("Edit", model);
+        }
+
+
+        // Action for the ManageClaims page
+        public IActionResult ManageClaims()
+        {
+            var model = new ManageClaimsViewModel();
+            // Populate the model with data (for demonstration purposes, consider fetching from DB)
+            return View(model);
+        }
+
+        // Action to generate a report
+        [HttpPost]
+        public IActionResult GenerateReport()
+        {
+            // Logic to generate report
+            // Example: Call a service to generate and return a report
+            // For demonstration, we'll just redirect back to ManageClaims
+
+            TempData["Message"] = "Report generated successfully!";
+            return RedirectToAction("ManageClaims");
+        }
+
+        // Action to update lecturer information
+        [HttpPost]
+        public IActionResult UpdateLecturer(Lecturer lecturer)
+        {
+            if (ModelState.IsValid)
+            {
+                // Logic to update lecturer information in the database
+                // Example: Call a service to update lecturer
+                TempData["Message"] = "Lecturer updated successfully!";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Error updating lecturer. Please check the input.";
+            }
+            return RedirectToAction("ManageClaims");
         }
 
         // GET: Submit Claims

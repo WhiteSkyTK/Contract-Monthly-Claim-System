@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
     <style>
         /* General Styles */
@@ -15,11 +16,19 @@
             margin: 0; /* Remove default margin */
             display: flex;
             flex-direction: column; /* Stack children vertically */
+            font-family: 'Poppins', sans-serif;
+            background-color: #F7F7F7;
+            animation: fadeIn 0.5s ease-in-out;
         }
 
-        body {
-            background-color: #F7F7F7;
-            font-family: 'Poppins', sans-serif;
+        /* Fade In Animation */
+        @@keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
         }
 
         /* Main Content Area */
@@ -31,57 +40,110 @@
         .navbar {
             background-color: #262626;
             color: white;
-            padding: 20px 40px;
-            border-radius: 0 0 10px 10px;
+            padding: 15px 30px; /* Adjusted padding */
+            border-radius: 0; /* No circular radius */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
 
         .navbar-brand {
             color: white;
-            font-size: 26px;
+            font-size: 24px;
             font-weight: 600;
-            transition: color 0.3s ease;
+            transition: color 0.3s ease, transform 0.3s ease; /* Added transform for scale effect */
         }
 
         .navbar-brand:hover {
             color: #DE1B38;
         }
 
+        .navbar-brand:active {
+            transform: scale(1.05); /* Scale effect on click */
+        }
+
         .nav-link {
             color: white;
             font-weight: 500;
             margin-right: 20px;
-            transition: color 0.3s ease;
+            transition: color 0.3s ease, transform 0.3s ease; /* Added transform for scale effect */
         }
 
         .nav-link:hover {
             color: #DE1B38;
+            transform: scale(1.05); /* Scale effect on hover */
         }
 
         /* Button and Profile Circle Styles */
         .navbar-btn, .profile-circle {
             color: white;
             font-weight: 600;
-            padding: 10px 20px;
-            border-radius: 50%;
+            padding: 10px 0;
             width: 40px;
             height: 40px;
             display: flex;
             justify-content: center;
             align-items: center;
-            background-color: #DE1B38;
+            background-color: #333333;
             transition: background-color 0.3s ease, transform 0.3s ease;
             margin-left: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            position: relative; /* Needed for the animation effect */
         }
 
         .profile-circle {
-            background-color: #333333;
-            font-size: 16px;
-            text-transform: uppercase;
-            cursor: pointer;
+            animation: letterBounce 0.5s ease-in-out forwards; /* Animation on hover */
         }
 
         .profile-circle:hover {
             background-color: #bf162f;
+            transform: scale(1.1); /* Scale effect on hover */
+        }
+
+        /* Profile Circle Animation */
+        .profile-circle:active {
+            animation: letterMove 0.3s forwards; /* Trigger animation on click */
+        }
+
+        @@keyframes letterMove {
+            0% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-5px);
+            }
+            100% {
+                transform: translateY(0);
+            }
+        }
+
+        @@keyframes letterBounce {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        /* Dropdown Menu Animation */
+        .dropdown-menu {
+            display: none; /* Hide by default */
+            animation: dropdownFadeIn 0.3s forwards; /* Animation when shown */
+        }
+
+        .dropdown-menu.show {
+            display: block; /* Show dropdown */
+        }
+
+        @@keyframes dropdownFadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* Button Style */
@@ -93,15 +155,16 @@
             font-weight: 500;
             border-radius: 5px;
             cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease; /* Added transform for scale effect */
         }
 
         button.btn-primary:hover {
             background-color: #bf162f;
+            transform: scale(1.05); /* Scale effect on hover */
         }
 
         /* Prevent button turning blue on click/focus */
         button.btn-primary:focus, button.btn-primary:active {
-            background-color: #bf162f;
             outline: none;
             box-shadow: none;
         }
@@ -125,7 +188,7 @@
         /* Media Query for Responsiveness */
         @@media (max-width: 768px) {
             .navbar {
-                padding: 10px 20px;
+                padding: 10px 15px; /* Adjusted padding */
             }
 
             .navbar-brand {
@@ -147,12 +210,9 @@
                 width: 100%;
                 margin-top: 10px;
             }
-
             /* Align menu items to the right in mobile view */
             .collapse.navbar-collapse {
                 justify-content: flex-end; /* Aligns menu items to the right */
-                text-align: right; /* Ensure text is aligned to the right */
-                width: 100%; /* Full width of the navbar */
             }
         }
     </style>
@@ -162,12 +222,12 @@
         <nav class="navbar navbar-expand-lg">
             <div class="container-fluid">
                 <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
-                    Contract Monthly Claim System
+                    <i class="fas fa-file-invoice"></i> Contract Monthly Claim System
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                         data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false"
                         aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
+                    <i class="fas fa-bars" style="color: #DE1B38;"></i> <!-- Burger icon -->
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ms-auto">
@@ -207,7 +267,6 @@
                         }
                         else if (User.IsInRole("HR"))
                         {
-                            <!-- Navigation links for HR -->
                             <li class="nav-item">
                                 <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Register">Register Lecturer</a>
                             </li>
@@ -229,7 +288,7 @@
                         }
                         else
                         {
-                            //Add links for Guest 
+                            // Add links for Guest
                         }
 
                         <li class="nav-item dropdown">
@@ -239,7 +298,7 @@
                                 var initials = nameParts.Length >= 2 ? $"{nameParts[0][0]}{nameParts[1][0]}" : $"{nameParts[0][0]}";
 
                                 <a class="profile-circle dropdown-toggle" href="#" id="profileDropdown"
-                                   role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                   role="button" data-bs-toggle="dropdown" aria-expanded="false" onclick="toggleDropdown(event)">
                                     @initials
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
@@ -277,5 +336,17 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
+
+    <script>
+        // Function to toggle dropdown visibility
+        function toggleDropdown(event) {
+            const dropdown = event.currentTarget.nextElementSibling;
+            dropdown.classList.toggle('show');
+            // Close other dropdowns if open
+            document.querySelectorAll('.dropdown-menu').forEach((menu) => {
+                if (menu !== dropdown) menu.classList.remove('show');
+            });
+        }
+    </script>
 </body>
 </html>

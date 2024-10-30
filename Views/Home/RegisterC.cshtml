@@ -14,9 +14,10 @@
     }
 }
 
-<div class="register-container">
-    <div class="register-box">
-        <h1 class="register-title">Register Programme Coordinator</h1>
+<!-- Centered container for the registration form -->
+<div class="register-container fade-in">
+    <div class="register-box fade-in">
+        <h1 class="register-title">Create an Account (Programme Coordinator)</h1>
         <p class="register-subtitle">Please fill in the details below to create your account</p>
 
         <!-- Registration Form -->
@@ -52,7 +53,12 @@
             <!-- Coordinator Password input -->
             <div class="form-group">
                 <label for="CoordinatorPassword">Password</label>
-                <input asp-for="CoordinatorPassword" type="password" class="form-control" placeholder="Enter your password" required>
+                <div class="password-input">
+                    <input asp-for="CoordinatorPassword" type="password" class="form-control" id="CoordinatorPassword" placeholder="Enter your password" required>
+                    <span class="toggle-password" onclick="togglePasswordVisibility()">
+                        <i class="fa fa-eye" id="toggleIcon"></i>
+                    </span>
+                </div>
                 <span asp-validation-for="CoordinatorPassword" class="text-danger"></span>
             </div>
 
@@ -67,12 +73,24 @@
 
 <!-- Custom styles for the register page -->
 <style>
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
     .register-container {
         display: flex;
         justify-content: center;
         align-items: center;
         height: 100vh;
-        background-color: #f7f9fc; /* Adjust background color to match website theme */
+        background-color: #f7f9fc; /* Adjust background color to match the theme */
+        animation: fadeIn 1s ease; /* Fade-in animation for the container */
     }
 
     .register-box {
@@ -83,17 +101,18 @@
         max-width: 400px;
         width: 100%;
         text-align: center;
+        animation: fadeIn 1.2s ease; /* Fade-in animation for the box */
     }
 
     .register-title {
-        font-family: 'Montserrat', sans-serif; /* Nice modern font */
+        font-family: 'Montserrat', sans-serif;
         font-size: 2rem;
-        color: #333333; /* Adjust text color to match site */
+        color: #333333;
     }
 
     .register-subtitle {
-        font-family: 'Open Sans', sans-serif; /* Another clean font */
-        color: #666666; /* Subtitle color */
+        font-family: 'Open Sans', sans-serif;
+        color: #666666;
         margin-bottom: 2rem;
     }
 
@@ -103,34 +122,73 @@
         margin-bottom: 1rem;
         border-radius: 5px;
         font-family: 'Open Sans', sans-serif;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease; /* Transition effect */
+    }
+
+    .form-control:focus {
+        border-color: #DE1B38; /* Change border color on focus */
+        box-shadow: 0 0 5px rgba(222, 27, 56, 0.5); /* Subtle shadow on focus */
+        outline: none; /* Remove default outline */
+    }
+
+    .password-input {
+        position: relative; /* Positioning for toggle icon */
+    }
+
+    .toggle-password {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #DE1B38;
     }
 
     .register-btn {
-        background-color: #DE1B38; /* Primary button color */
+        background-color: #DE1B38;
         color: #ffffff;
         border: none;
         padding: 0.75rem 2rem;
         font-size: 1rem;
         border-radius: 5px;
         cursor: pointer;
-        transition: background-color 0.3s ease;
+        transition: background-color 0.3s ease, transform 0.2s ease; /* Added transform for hover effect */
         width: 100%;
     }
 
-        .register-btn:hover {
-            background-color: #87071a; /* Darker shade on hover */
-        }
+    .register-btn:hover {
+        background-color: #87071a; /* Darker shade on hover */
+        transform: translateY(-2px); /* Subtle lift on hover */
+    }
 
     .login-option {
         margin-top: 1rem;
     }
 
-        .login-option a {
-            color: #007bff; /* Link color */
-            text-decoration: none;
-        }
+    .login-option a {
+        color: #007bff; /* Link color */
+        text-decoration: none;
+    }
 
-            .login-option a:hover {
-                text-decoration: underline;
-            }
+    .login-option a:hover {
+        text-decoration: underline;
+    }
 </style>
+
+<!-- JavaScript for password toggle -->
+<script>
+    function togglePasswordVisibility() {
+        const passwordInput = document.getElementById('CoordinatorPassword');
+        const toggleIcon = document.getElementById('toggleIcon');
+
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleIcon.classList.remove('fa-eye');
+            toggleIcon.classList.add('fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            toggleIcon.classList.remove('fa-eye-slash');
+            toggleIcon.classList.add('fa-eye');
+        }
+    }
+</script>

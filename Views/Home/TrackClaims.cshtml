@@ -1,12 +1,12 @@
 ﻿@model List<ClaimSubmissionInfo>
 @using System.Security.Claims
 @using System.Linq
-@using Contract_Monthly_Claim_System.Context; 
+@using Contract_Monthly_Claim_System.Context;
 
-@inject Contract_Monthly_Claim_System.Context.ApplicationDbContext DbContext 
+@inject Contract_Monthly_Claim_System.Context.ApplicationDbContext DbContext
 
 <div class="container">
-    <h1 class="text-center">Track Your Claims</h1>
+    <h1 class="text-center animated-title">Track Your Claims</h1>
 
     <div class="view-toggle mb-3">
         <button id="listViewBtn" class="btn btn-outline-primary active-btn">List View</button>
@@ -16,18 +16,14 @@
     <div id="claimsContainer" class="row list-view">
         @if (Model != null && Model.Any())
         {
-            // Get the user ID
+            // Logic to retrieve user's claims
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
             int userId = int.Parse(userIdClaim);
-            // Retrieve the user's email
             var userEmail = DbContext.Users.FirstOrDefault(u => u.userID == userId)?.Username;
 
             if (userEmail != null)
             {
-                // Get the corresponding LecturerID using the user's email
                 var lecturerId = DbContext.Lecturers.FirstOrDefault(l => l.LecturerEmail == userEmail)?.LecturerID;
-
-                // Filter the claims based on the LecturerID
                 var userClaims = Model.Where(c => c.LecturerID == lecturerId);
 
                 if (!userClaims.Any())
@@ -42,7 +38,7 @@
                 {
                     foreach (var submissionInfo in userClaims)
                     {
-                        <div class="col-md-12 mb-4 claim-item">
+                        <div class="col-md-12 mb-4 claim-item animated-claim">
                             <div class="card">
                                 <div class="card-body">
                                     <h5 class="card-title">Claim ID: @submissionInfo.Claim.ClaimID</h5>
@@ -60,7 +56,7 @@
 
                                     @if (submissionInfo.ApprovalProcess != null)
                                     {
-                                        <p><strong>Feedback:</strong> @submissionInfo.ApprovalProcess.Feedback ?? "No feedback provided"</p>
+                                        <p><strong>Feedback:</strong> @submissionInfo.ApprovalProcess.Feedback No feedback provided</p>
                                         <p><strong>Approved/Rejected On:</strong> @submissionInfo.ApprovalProcess.ApprovalDate.ToString("dd MMM yyyy")</p>
                                         <p><strong>Program Coordinator:</strong> @submissionInfo.ApprovalProcess.Coordinator?.CoordinatorName @submissionInfo.ApprovalProcess.Coordinator?.CoordinatorSurname</p>
                                         <p><strong>Academic Manager:</strong> @submissionInfo.ApprovalProcess.Manager?.ManagerName @submissionInfo.ApprovalProcess.Manager?.ManagerSurname</p>
@@ -69,9 +65,12 @@
                                     {
                                         <p><strong>Approval Process:</strong> Not yet started</p>
                                     }
+
+                                    <!-- Progress bar with overlay animation -->
                                     <div class="progress">
                                         <div class="progress-bar @GetProgressBarClass(submissionInfo.Claim.Status)" role="progressbar" style="width: @(GetProgressPercentage(submissionInfo.Claim.Status))%" aria-valuenow="@GetProgressPercentage(submissionInfo.Claim.Status)" aria-valuemin="0" aria-valuemax="100">
-                                            @submissionInfo.Claim.Status
+                                            <span class="dancing-text">@submissionInfo.Claim.Status</span>
+                                            <div class="progress-bar-overlay"></div>
                                         </div>
                                     </div>
                                 </div>
@@ -100,7 +99,6 @@
     </div>
 </div>
 
-
 @functions {
     private string GetProgressBarClass(string status)
     {
@@ -119,66 +117,142 @@
         {
             "Pending" => 50,
             "Approved" => 100,
-            "Rejected" => 95,
+            "Rejected" => 100,
             _ => 0
         };
     }
 }
 
 <style>
-    body {
-        background-color: #f8f9fa; /* Light background color for the page */
-    }
-
+    /* Basic styling and animation */
     .container {
         margin-top: 20px;
+        animation: fadeIn 0.8s ease-in-out;
     }
 
     .view-toggle {
-        margin-bottom: 20px;
         display: flex;
-        justify-content: flex-end; /* Align buttons to the right */
+        justify-content: flex-end;
     }
 
     .btn {
-        margin-left: 10px; /* Space between buttons */
+        margin-left: 10px;
+        transition: all 0.3s ease;
     }
+
+        .btn:hover {
+            background-color: #DE1B38;
+            color: white;
+            transform: scale(1.05);
+        }
 
     .active-btn {
-        background-color: #DE1B38; /* Active button color */
-        color: white; /* Text color for active button */
+        background-color: #DE1B38;
+        color: white;
     }
 
-    /* Default view (List View) */
-    .list-view .claim-item {
-        display: block;
-        width: 100%; /* Full width for list view */
+    .animated-title {
+        animation: bounceText 2s infinite alternate;
     }
 
-    /* Grid View layout */
-    .grid-view .claim-item {
-        display: flex;
-        flex-direction: column;
-        width: calc(33.333% - 20px); /* Three items per row */
-        margin-right: 10px;
-        margin-left: 10px;
+    @@keyframes bounceText {
+        0% {
+            transform: translateY(0);
+        }
+
+        50% {
+            transform: translateY(-5px);
+        }
+
+        100% {
+            transform: translateY(0);
+        }
     }
 
-    /* Styling for cards */
     .card {
         border: 1px solid #DE1B38;
         border-radius: 10px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow for cards */
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
     }
 
-    /* Status bar and progress */
-    .status-text {
-        font-weight: bold;
-    }
+        .card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
 
     .progress {
         height: 1.5rem;
         margin-top: 0.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Progress bar overlay */
+    .progress-bar-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateX(-100%);
+        animation: loadOverlay 4s linear infinite;
+    }
+
+    @@keyframes loadOverlay {
+        0% {
+            transform: translateX(-100%);
+        }
+
+        100% {
+            transform: translateX(100%);
+        }
+    }
+
+    .dancing-text {
+        display: inline-block;
+        animation: bounce 1.5s ease-in-out infinite alternate;
+    }
+
+    @@keyframes bounce {
+        0%, 100% {
+            transform: translateY(0);
+        }
+
+        50% {
+            transform: translateY(-4px);
+        }
+    }
+
+    /* Fade-in animation */
+    .claim-item {
+        animation: fadeIn 1s ease-in-out;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Responsive layout */
+    .list-view .claim-item {
+        display: block;
+        width: 100%;
+    }
+
+    .grid-view .claim-item {
+        display: flex;
+        flex-direction: column;
+        width: calc(33.333% - 20px);
+        margin: 10px;
     }
 
     ul {
@@ -188,18 +262,17 @@
 </style>
 
 <script>
-    // JavaScript to toggle between List and Grid view
     document.getElementById('listViewBtn').addEventListener('click', function () {
         document.getElementById('claimsContainer').classList.remove('grid-view');
         document.getElementById('claimsContainer').classList.add('list-view');
-        this.classList.add('active-btn'); // Set this button as active
-        document.getElementById('gridViewBtn').classList.remove('active-btn'); // Remove active from grid button
+        this.classList.add('active-btn');
+        document.getElementById('gridViewBtn').classList.remove('active-btn');
     });
 
     document.getElementById('gridViewBtn').addEventListener('click', function () {
         document.getElementById('claimsContainer').classList.remove('list-view');
         document.getElementById('claimsContainer').classList.add('grid-view');
-        this.classList.add('active-btn'); // Set this button as active
-        document.getElementById('listViewBtn').classList.remove('active-btn'); // Remove active from list button
+        this.classList.add('active-btn');
+        document.getElementById('listViewBtn').classList.remove('active-btn');
     });
 </script>

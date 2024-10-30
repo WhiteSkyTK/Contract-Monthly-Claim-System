@@ -11,9 +11,10 @@
         </div>
     }
 }
+
 <div class="container page-background">
-    <div class="login-container">
-        <div class="login-box">
+    <div class="login-container fade-in">
+        <div class="login-box fade-in">
             <h1 class="login-title">Welcome Back!</h1>
             <p class="login-subtitle">Please login to access your account</p>
 
@@ -28,7 +29,12 @@
                 <!-- Password input -->
                 <div class="form-group">
                     <label for="Password">Password</label>
-                    <input type="password" class="form-control" id="Password" name="Password" placeholder="Enter your password" required>
+                    <div class="password-input">
+                        <input type="password" class="form-control" id="Password" name="Password" placeholder="Enter your password" required>
+                        <span class="toggle-password" onclick="togglePasswordVisibility()">
+                            <i class="fa fa-eye" id="toggleIcon"></i>
+                        </span>
+                    </div>
                 </div>
 
                 <!-- Remember Me checkbox -->
@@ -49,10 +55,13 @@
 
 <!-- Custom styles for the login page -->
 <style>
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
     .page-background {
-        background-image: url("../../wwwroot/Images/BG1.jpg");
-        background-size: cover;
-        background-position: center;
+        background-color: #e9ecef; /* Light gray background color */
         min-height: 100vh;
         padding: 20px;
     }
@@ -62,79 +71,110 @@
         justify-content: center;
         align-items: center;
         height: 100vh;
-        background-color: #f7f9fc; /* Example: Adjust background color to match website theme */
+        animation: fadeIn 1s ease; /* Fade-in animation for container */
     }
 
     .login-box {
         background-color: #ffffff;
         padding: 2rem;
         border-radius: 10px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
         max-width: 400px;
         width: 100%;
         text-align: center;
+        animation: fadeIn 1.2s ease; /* Fade-in animation for the box */
     }
 
     .login-title {
-        font-family: 'Montserrat', sans-serif; /* Example: Nice modern font */
+        font-family: 'Montserrat', sans-serif;
         font-size: 2rem;
-        color: #333333; /* Example: Adjust text color to match site */
+        color: #333333;
+        margin-bottom: 0.5rem; /* Spacing below title */
     }
 
     .login-subtitle {
-        font-family: 'Open Sans', sans-serif; /* Example: Another clean font */
-        color: #666666; /* Subtitle color */
+        font-family: 'Open Sans', sans-serif;
+        color: #666666;
         margin-bottom: 2rem;
     }
 
     .form-control {
-        border: 1px solid #dddddd;
+        border: 1px solid #cccccc; /* Lighter border color */
         padding: 0.75rem;
         margin-bottom: 1rem;
         border-radius: 5px;
         font-family: 'Open Sans', sans-serif;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease; /* Transition effect */
+    }
+
+    .form-control:focus {
+        border-color: #DE1B38; /* Change border color on focus */
+        box-shadow: 0 0 5px rgba(222, 27, 56, 0.5); /* Subtle shadow on focus */
+        outline: none; /* Remove default outline */
+    }
+
+    .password-input {
+        position: relative; /* Positioning for toggle icon */
+    }
+
+    .toggle-password {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #DE1B38;
     }
 
     .login-btn {
-        background-color: #DE1B38; /* Primary button color */
+        background-color: #DE1B38;
         color: #ffffff;
         border: none;
         padding: 0.75rem 2rem;
         font-size: 1rem;
         border-radius: 5px;
         cursor: pointer;
-        transition: background-color 0.3s ease;
+        transition: background-color 0.3s ease, transform 0.2s ease; /* Added transform for hover effect */
         width: 100%;
+        margin-top: 1rem; /* Spacing above button */
     }
 
-        .login-btn:hover {
-            background-color: #87071a; /* Darker shade on hover */
-        }
+    .login-btn:hover {
+        background-color: #87071a; /* Darker shade on hover */
+        transform: translateY(-2px); /* Subtle lift on hover */
+    }
 
     .forgot-password {
         margin-top: 1rem;
+        font-family: 'Open Sans', sans-serif;
     }
 
-        .forgot-password a {
-            color: #007bff; /* Link color */
-            text-decoration: none;
-        }
-
-            .forgot-password a:hover {
-                text-decoration: underline;
-            }
-
-    .login-footer {
-        text-align: center;
-        margin-top: 2rem;
+    .forgot-password a {
+        color: #007bff;
+        text-decoration: none;
+        transition: color 0.3s ease; /* Transition for link color */
     }
 
-        .login-footer a {
-            color: #007bff;
-            text-decoration: none;
-        }
-
-            .login-footer a:hover {
-                text-decoration: underline;
-            }
+    .forgot-password a:hover {
+        color: #0056b3; /* Darker blue on hover */
+        text-decoration: underline;
+    }
 </style>
+
+<!-- JavaScript for password toggle -->
+<script>
+    function togglePasswordVisibility() {
+        const passwordInput = document.getElementById('Password');
+        const toggleIcon = document.getElementById('toggleIcon');
+
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleIcon.classList.remove('fa-eye');
+            toggleIcon.classList.add('fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            toggleIcon.classList.remove('fa-eye-slash');
+            toggleIcon.classList.add('fa-eye');
+        }
+    }
+</script>

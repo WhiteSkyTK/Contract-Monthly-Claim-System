@@ -1,5 +1,153 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model Contract_Monthly_Claim_System.Models.ManageClaimsViewModel
 @{
+    ViewData["Title"] = "Manage Claims";
+}
+
+<div class="container page-background">
+    <div class="manage-claims-container fade-in">
+        <h1 class="page-title">Manage Claims</h1>
+        <p class="page-subtitle">Automate claim processing and lecturer data management tasks, streamlining administrative processes and improving overall efficiency.</p>
+
+        @if (TempData["Message"] != null)
+        {
+            <div class="alert alert-success fade-in">@TempData["Message"]</div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger fade-in">@TempData["ErrorMessage"]</div>
+        }
+
+        <div class="functionality-section">
+            <h2 class="available-functions-title">Available Functions</h2>
+            <ul class="functionality-list">
+                <li>
+                    <h3>Generate Invoices</h3>
+                    <p>Automatically generate invoices or reports summarizing approved claims for payment processing.</p>
+                    <form asp-action="GenerateReport" method="post" style="display:inline;">
+                        <button type="submit" class="btn btn-primary animated-btn">Generate Invoices</button>
+                    </form>
+                </li>
+                <li>
+                    <h3>View Reports</h3>
+                    <p>Access various reports for detailed insights into claims and lecturer performance.</p>
+                    <button class="btn btn-primary animated-btn" onclick="location.href='@Url.Action("ViewReports", "Home")'">View Reports</button>
+                </li>
+            </ul>
+        </div>
+
+        <div class="additional-info">
+            <h2>Tools and Technologies</h2>
+            <p>Utilizing ASP.NET Web Forms or ASP.NET Core Razor Pages for building the HR interface. Integrate reporting libraries like Crystal Reports or SQL Server Reporting Services (SSRS) for generating invoices or reports. Leverage Entity Framework for data access operations, and use ASP.NET Identity for user authentication and authorization.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Custom CSS for Manage Claims page to match existing styles -->
+<style>
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .fade-in {
+        animation: fadeIn 1s ease;
+    }
+
+    .page-background {
+        background-color: #f7f9fc;
+        padding: 20px;
+        min-height: 100vh;
+    }
+
+    .manage-claims-container {
+        max-width: 800px;
+        margin: auto;
+        text-align: center;
+    }
+
+    .page-title {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 2.5rem;
+        color: #333333;
+        margin-bottom: 1rem;
+    }
+
+    .page-subtitle {
+        font-family: 'Open Sans', sans-serif;
+        color: #666666;
+        margin-bottom: 2rem;
+    }
+
+    .functionality-section {
+        margin-top: 3rem;
+        text-align: center; /* Centered the functionality section */
+    }
+
+    .available-functions-title {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 1.75rem;
+        color: #333;
+        text-decoration: underline;
+        margin-bottom: 1.5rem;
+    }
+
+    .functionality-list {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    .functionality-list li {
+        margin-bottom: 2rem;
+        animation: fadeIn 0.8s ease; /* Added animation to list items */
+    }
+
+    h3 {
+        font-size: 1.5rem;
+        color: #333;
+    }
+
+    .btn-primary {
+        background-color: #DE1B38;
+        color: #ffffff;
+        border: none;
+        padding: 0.75rem 2rem;
+        font-size: 1rem;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease; /* Added transform for hover effect */
+        width: 100%;
+    }
+
+    .animated-btn:hover {
+        background-color: #87071a;
+        transform: translateY(-2px); /* Subtle lift on hover */
+    }
+
+    .additional-info {
+        margin-top: 4rem;
+        text-align: left;
+    }
+
+    .additional-info h2 {
+        font-size: 1.75rem;
+        color: #333;
+        margin-bottom: 1rem;
+    }
+
+    .additional-info p {
+        font-family: 'Open Sans', sans-serif;
+        color: #666666;
+    }
+</style>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }
