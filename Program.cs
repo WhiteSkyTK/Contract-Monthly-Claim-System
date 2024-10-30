@@ -38,6 +38,7 @@ app.UseRouting();
 app.UseAuthentication(); // Ensure authentication is used
 app.UseAuthorization();
 
+// Configure endpoints
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");

@@ -14,7 +14,6 @@
             <div class="user-management-section">
                 <h2 class="all-users-title">All Users</h2>
 
-                <!-- Display all Users grouped by Role -->
                 @if (Model.Lecturers.Any())
                 {
                     <h3>Lecturers</h3>
@@ -35,10 +34,7 @@
                                     <td>@user.LecturerEmail</td>
                                     <td>@user.LecturerPhone</td>
                                     <td>
-                                        <form asp-action="Edit" method="get">
-                                            <input type="hidden" name="userId" value="@user.LecturerID" />
-                                            <button type="submit" class="btn btn-secondary animated-btn">Edit</button>
-                                        </form>
+                                        <button class="btn btn-secondary animated-btn" onclick="showEditForm(@user.LecturerID, 'Lecturer')">Edit</button>
                                     </td>
                                 </tr>
                             }
@@ -70,10 +66,7 @@
                                     <td>@user.CoordinatorEmail</td>
                                     <td>@user.CoordinatorPhone</td>
                                     <td>
-                                        <form asp-action="Edit" method="get">
-                                            <input type="hidden" name="userId" value="@user.CoordinatorID" />
-                                            <button type="submit" class="btn btn-secondary animated-btn">Edit</button>
-                                        </form>
+                                        <button class="btn btn-secondary animated-btn" onclick="showEditForm(@user.CoordinatorID, 'ProgrammeCoordinator')">Edit</button>
                                     </td>
                                 </tr>
                             }
@@ -105,10 +98,7 @@
                                     <td>@user.ManagerEmail</td>
                                     <td>@user.ManagerPhone</td>
                                     <td>
-                                        <form asp-action="Edit" method="get">
-                                            <input type="hidden" name="userId" value="@user.ManagerID" />
-                                            <button type="submit" class="btn btn-secondary animated-btn">Edit</button>
-                                        </form>
+                                        <button class="btn btn-secondary animated-btn" onclick="showEditForm(@user.ManagerID, 'AcademicManager')">Edit</button>
                                     </td>
                                 </tr>
                             }
@@ -120,9 +110,41 @@
                     <p>No Academic Managers found in the database.</p>
                 }
             </div>
+
+            <!-- Edit User Form (Initially Hidden) -->
+            <div id="editUserForm" class="edit-user-form fade-in" style="display:none; margin-top: 2rem;">
+                <h3>Edit User Details</h3>
+                <form asp-action="Edit" method="post">
+                    <input type="hidden" asp-for="Lecturer.LecturerID" />
+                    <input type="hidden" asp-for="ProgrammeCoordinator.CoordinatorID" />
+                    <input type="hidden" asp-for="AcademicManager.ManagerID" />
+
+                    <div class="form-group">
+                        <label asp-for="Lecturer.LecturerName"></label>
+                        <input asp-for="Lecturer.LecturerName" class="form-control" required />
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Lecturer.LecturerSurname"></label>
+                        <input asp-for="Lecturer.LecturerSurname" class="form-control" required />
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Lecturer.LecturerEmail"></label>
+                        <input asp-for="Lecturer.LecturerEmail" class="form-control" required type="email" />
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Lecturer.LecturerPhone"></label>
+                        <input asp-for="Lecturer.LecturerPhone" class="form-control" required type="tel" />
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <button type="submit" class="btn btn-primary animated-btn">Update</button>
+                        <button type="button" class="btn btn-danger animated-btn" onclick="hideEditForm()">Cancel</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 </div>
+
 
 <!-- Custom CSS for User Management to match existing styles -->
 <style>
@@ -131,6 +153,7 @@
             opacity: 0;
             transform: translateY(-20px);
         }
+
         to {
             opacity: 1;
             transform: translateY(0);
@@ -225,10 +248,10 @@
         width: 100%;
     }
 
-    .animated-btn:hover {
-        background-color: #87071a; /* Darker shade on hover */
-        transform: translateY(-2px); /* Subtle lift on hover */
-    }
+        .animated-btn:hover {
+            background-color: #87071a; /* Darker shade on hover */
+            transform: translateY(-2px); /* Subtle lift on hover */
+        }
 
     .user-management-section h3 {
         color: #333;
@@ -238,3 +261,92 @@
         color: #666666;
     }
 </style>
+
+<script>
+    function showEditForm(userId, role) {
+        // Fetch user data from the server
+        fetch(`/Home/GetUserData/${userId}?role=${role}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(user => {
+                // Clear the form fields
+                clearForm();
+
+                // Populate fields based on the user's role
+                populateUserData(user);
+
+                // Show the form for editing
+                document.getElementById('editUserForm').style.display = 'block';
+            })
+            .catch(error => {
+                console.error('Error fetching user data:', error);
+            });
+    }
+
+    function clearForm() {
+        // Clear all relevant form fields
+        const fields = [
+            'Lecturer.LecturerName',
+            'Lecturer.LecturerSurname',
+            'Lecturer.LecturerEmail',
+            'Lecturer.LecturerPhone',
+            'ProgrammeCoordinator.CoordinatorName',
+            'ProgrammeCoordinator.CoordinatorSurname',
+            'ProgrammeCoordinator.CoordinatorEmail',
+            'ProgrammeCoordinator.CoordinatorPhone',
+            'AcademicManager.ManagerName',
+            'AcademicManager.ManagerSurname',
+            'AcademicManager.ManagerEmail',
+            'AcademicManager.ManagerPhone'
+        ];
+
+        fields.forEach(field => {
+            const input = document.querySelector(`input[name="${field}"]`);
+            if (input) {
+                input.value = '';
+            }
+        });
+    }
+
+    function populateUserData(user) {
+        const commonFields = {
+            'UserID': user.userID,
+            'Name': user.Name,
+            'Surname': user.Surname,
+            'Email': user.Email,
+            'Phone': user.Phone
+        };
+
+        // Determine which role to populate data for
+        switch (user.Role) {
+            case "Lecturer":
+                populateFields('Lecturer', commonFields);
+                break;
+            case "Programme Coordinator":
+                populateFields('ProgrammeCoordinator', commonFields);
+                break;
+            case "Academic Manager":
+                populateFields('AcademicManager', commonFields);
+                break;
+            default:
+                console.warn('Unknown role:', user.Role);
+        }
+    }
+
+    function populateFields(rolePrefix, fields) {
+        Object.keys(fields).forEach(key => {
+            const input = document.querySelector(`input[name="${rolePrefix}.${key}"]`);
+            if (input) {
+                input.value = fields[key];
+            }
+        });
+    }
+
+    function hideEditForm() {
+        document.getElementById('editUserForm').style.display = 'none'; // Hide the form
+    }
+</script>
