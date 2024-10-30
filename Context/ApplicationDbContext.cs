@@ -19,6 +19,7 @@ namespace Contract_Monthly_Claim_System.Context
         public DbSet<Module> Modules { get; set; }
         public DbSet<ClaimsModules> ClaimsModules { get; set; }
         public DbSet<Users> Users { get; set; }
+        public DbSet<HR> HRs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -163,7 +163,7 @@ namespace Contract_Monthly_Claim_System.Controllers
             return View();
         }
 
-        // Login
+        // POST: Login
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(string Username, string Password, bool RememberMe)
@@ -194,7 +194,7 @@ namespace Contract_Monthly_Claim_System.Controllers
         new Claim(ClaimTypes.NameIdentifier, user.userID.ToString()) // Add the user ID claim
     };
 
-            // Add specific claims for Coordinators and Managers
+            // Add role-specific claims for Coordinators, Managers, and HR
             if (user.Role == "Programme Coordinator")
             {
                 claims.Add(new Claim("CoordinatorID", user.userID.ToString())); // Add CoordinatorID claim
@@ -202,6 +202,10 @@ namespace Contract_Monthly_Claim_System.Controllers
             else if (user.Role == "Academic Manager")
             {
                 claims.Add(new Claim("ManagerID", user.userID.ToString())); // Add ManagerID claim
+            }
+            else if (user.Role == "HR")
+            {
+                claims.Add(new Claim("HRID", user.userID.ToString())); // Add HRID claim
             }
 
             var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -314,6 +318,56 @@ namespace Contract_Monthly_Claim_System.Controllers
             }
             return View(coordinator);
         }
+
+        // GET: RegisterH
+        public IActionResult RegisterH()
+        {
+            return View();
+        }
+
+        // POST: RegisterH
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RegisterH(HR hr)
+        {
+            // Check if email already exists in the Users table
+            var existingUser = await _context.Users.SingleOrDefaultAsync(u => u.Username == hr.HREmail);
+
+            if (existingUser != null)
+            {
+                ModelState.AddModelError("HREmail", "This email is already registered.");
+                return View(hr);
+            }
+
+            if (ModelState.IsValid)
+            {
+                // Hash the password
+                var (hashedPassword, salt) = HashPassword(hr.HRPassword);
+                hr.HRPassword = hashedPassword;
+
+                // Create a new user entry
+                var user = new Users
+                {
+                    Username = hr.HREmail,
+                    PasswordHash = hashedPassword,
+                    Salt = Convert.ToBase64String(salt),
+                    Role = "HR"
+                };
+
+                // Add user and HR details to the database
+                await _context.Users.AddAsync(user);
+                await _context.SaveChangesAsync();
+
+                _context.HRs.Add(hr);
+                await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = "HR account created successfully!";
+                return RedirectToAction("Index", "Home");
+            }
+
+            return View(hr);
+        }
+
 
         public async Task<IActionResult> About()
         {
