@@ -71,6 +71,28 @@
             <p>Error: Academic Manager not found.</p>
         }
     }
+    // Check if the user is an HR
+    else if (User.IsInRole("HR"))
+    {
+        var hr = Model.HR; // Ensure the HR object is fetched from the model
+
+        if (hr != null)
+        {
+            <div class="login-container">
+                <div class="login-box">
+                    <h1 class="login-title">Welcome Back, @hr.HRName @hr.HRSurname!</h1>
+                    <p class="login-subtitle">Manage employee records and oversee claims processing.</p>
+
+                    <!-- Button to HR dashboard page -->
+                    <a class="btn btn-primary submit-btn" asp-controller="Home" asp-action="ManageClaims">Go to HR Dashboard</a>
+                </div>
+            </div>
+        }
+        else
+        {
+            <p>Error: HR not found.</p>
+        }
+    }
     else
     {
         <p>Error: Role not recognized.</p>
@@ -100,13 +122,6 @@ else
 
 <!-- Custom styles for the welcome page -->
 <style>
-    .page-background {
-        background-image: url("../../wwwroot/Images/BG2.jpg");
-        background-size: cover;
-        background-position: center;
-        min-height: 100vh;
-        padding: 20px;
-    }
 
     .login-container {
         display: flex;

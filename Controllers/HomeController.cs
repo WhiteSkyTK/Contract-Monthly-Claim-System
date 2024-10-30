@@ -406,17 +406,30 @@ namespace Contract_Monthly_Claim_System.Controllers
                     .SingleOrDefaultAsync(l => l.ManagerEmail == userEmail);
                 if (manager == null)
                 {
-                    TempData["ErrorMessage"] = "Lecturer not found.";
+                    TempData["ErrorMessage"] = "Academic Manager not found.";
                     return RedirectToAction("Index");
                 }
 
-                model.AcademicManager = manager; // Add lecturer details to the model
+                model.AcademicManager = manager; // Add Academic Manager details to the model
+            }
+            else if (User.IsInRole("HR"))
+            {
+                var hr = await _context.HRs
+                    .SingleOrDefaultAsync(h => h.HREmail == userEmail);
+                if (hr == null)
+                {
+                    TempData["ErrorMessage"] = "HR not found.";
+                    return RedirectToAction("Index");
+                }
+
+                model.HR = hr; // Add HR details to the model
             }
             else
             {
                 TempData["ErrorMessage"] = "User role not recognized.";
                 return RedirectToAction("Index");
             }
+
             return View(model); // Return the model to the view
         }
 
@@ -471,31 +484,48 @@ namespace Contract_Monthly_Claim_System.Controllers
 
                     model.ProgrammeCoordinator = coordinator;
                 }
-                //Academic Manager
                 else if (User.IsInRole("Academic Manager"))
                 {
-                    // Fetch the program coordinator details from the database asynchronously
+                    // Fetch the academic manager details from the database asynchronously
                     var manager = await _context.AcademicManagers
                         .SingleOrDefaultAsync(pc => pc.ManagerEmail == userEmail);
 
                     if (manager == null)
                     {
-                        // Coordinator not found in the database
+                        // Academic Manager not found in the database
                         TempData["ErrorMessage"] = "Academic Manager not found in the system.";
                         return View(model); // Return the view with an error message
                     }
 
                     model.AcademicManager = manager;
                 }
+                else if (User.IsInRole("HR"))
+                {
+                    // Fetch the HR details from the database asynchronously
+                    var hr = await _context.HRs
+                        .SingleOrDefaultAsync(h => h.HREmail == userEmail);
+
+                    if (hr == null)
+                    {
+                        // HR not found in the database
+                        TempData["ErrorMessage"] = "HR not found in the system.";
+                        return View(model); // Return the view with an error message
+                    }
+
+                    model.HR = hr; // Add HR details to the model
+                }
                 else
                 {
                     TempData["ErrorMessage"] = "User role not recognized.";
                     return View(model); // Return the view with an error message
                 }
-                return View(model); // Return the view with appropriate user details (lecturer or coordinator)
+
+                return View(model); // Return the view with the appropriate user details
             }
+
             return View(); // Return the guest view if not authenticated
         }
+
 
         public async Task<IActionResult> VerifyClaims()
         {

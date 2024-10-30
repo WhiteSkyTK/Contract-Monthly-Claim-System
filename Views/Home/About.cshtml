@@ -185,6 +185,85 @@
             </div>
             <!-- Additional content for lecturers can go here -->
         }
+        // Check if the user is an HR
+        else if (User.IsInRole("HR"))
+        {
+            var hr = Model.HR; // Fetch the HR from the model
+
+            if (hr != null)
+            {
+                <p class="lead text-center">Welcome, @hr.HRName @hr.HRSurname!</p>
+                <p class="text-center">Here you can manage employee records and oversee claims processing.</p>
+
+                <div class="row my-4">
+                    <div class="col-md-12">
+                        <h2>Your Role</h2>
+                        <p>
+                            As an HR, your role is essential for maintaining and managing the staff records and ensuring compliance in the claims process. This platform enables you to support both the academic and administrative aspects of the institution.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="row my-4">
+                    <div class="col-md-12">
+                        <h2>Responsibilities</h2>
+                        <ul>
+                            <li>Maintain up-to-date records for all employees, including lecturers and administrative staff.</li>
+                            <li>Oversee and manage the claims approval process in collaboration with academic staff.</li>
+                            <li>Provide support and resources for staff regarding claim submissions and queries.</li>
+                            <li>Ensure all claims comply with institutional and legal policies.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="row my-4">
+                    <div class="col-md-12">
+                        <h2>Key Features</h2>
+                        <p>
+                            The platform offers various features to streamline HR tasks, including:
+                        </p>
+                        <ul>
+                            <li><strong>Employee Management:</strong> Easily manage staff records and update their information as needed.</li>
+                            <li><strong>Claim Oversight:</strong> Monitor claims and collaborate with managers and coordinators to ensure accurate processing.</li>
+                            <li><strong>Reports and Analysis:</strong> Generate detailed reports for payroll, auditing, and compliance checks.</li>
+                            <li><strong>Staff Communication:</strong> Engage with academic and administrative staff for any claim-related inquiries or updates.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="row my-4">
+                    <div class="col-md-12">
+                        <h2>Support and Resources</h2>
+                        <p>
+                            For assistance with the platform or guidance on claim processes, please reach out to our support team. Available resources include:
+                        </p>
+                        <ul>
+                            <li><strong>HR Manuals:</strong> Comprehensive guides on using the platform’s HR functionalities.</li>
+                            <li><strong>Workshops:</strong> Attend training sessions focused on enhancing your understanding of HR tools and processes.</li>
+                            <li><strong>Support Team:</strong> Our support team is available for any technical assistance or queries.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="row my-4">
+                    <div class="col-md-12">
+                        <h2>Contact Us</h2>
+                        <p>
+                            For further assistance, please contact the administration office:
+                        </p>
+                        <p>
+                            <strong>Email:</strong> support@yourinstitution.edu<br />
+                            <strong>Phone:</strong> (123) 456-7890<br />
+                            <strong>Office Hours:</strong> Monday to Friday, 9 AM - 5 PM
+                        </p>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <p>Error: HR not found.</p>
+            }
+        }
         else
         {
             <p>Error: Role not recognized.</p>
