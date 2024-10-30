@@ -205,6 +205,28 @@
                                 <a class="nav-link" asp-area="" asp-controller="Home" asp-action="About">About</a>
                             </li>
                         }
+                        else if (User.IsInRole("HR"))
+                        {
+                            <!-- Navigation links for HR -->
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Register">Register Lecturer</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Home" asp-action="RegisterC">Register Programme Coordinator</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Home" asp-action="RegisterM">Register Academic Manager</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Edit">Edit Details</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Home" asp-action="ManageClaims">Manage Claims</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Home" asp-action="About">About</a>
+                            </li>
+                        }
                         else
                         {
                             //Add links for Guest 

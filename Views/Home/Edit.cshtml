@@ -1,0 +1,142 @@
+﻿@model Contract_Monthly_Claim_System.Models.EditViewModel
+@{
+    ViewData["Title"] = "Edit User Details";
+}
+
+<div class="container page-background">
+    <div class="login-container">
+        <div class="login-box">
+            <h1 class="login-title">Edit User Details</h1>
+            <p class="login-subtitle">Search and update information for Lecturers, Programme Coordinators, or Academic Managers.</p>
+
+            <!-- Search Section -->
+            <form asp-action="Edit" method="post">
+                <div class="form-group mb-3">
+                    <label for="searchTerm" class="form-label">Search User (Name or Email)</label>
+                    <input type="text" name="SearchTerm" class="form-control" placeholder="Enter name or email to search..." required />
+                    <span asp-validation-for="SearchTerm" class="text-danger"></span>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Search</button>
+            </form>
+
+            <hr class="my-4">
+
+            <!-- Display/Edit Section -->
+            @if (Model.UserFound)
+            {
+                <h2 class="mt-4">User Details</h2>
+                <form asp-action="UpdateUser" method="post">
+                    <div class="form-group mb-3">
+                        <label>Name</label>
+                        <input type="text" name="Name" class="form-control" value="@Model.User.Name" required />
+                        <span asp-validation-for="User.Name" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label>Email</label>
+                        <input type="email" name="Email" class="form-control" value="@Model.User.Email" required />
+                        <span asp-validation-for="User.Email" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label>Role</label>
+                        <select name="Role" class="form-control" required>
+                            <option value="Lecturer" selected="@(Model.User.Role == "Lecturer")">Lecturer</option>
+                            <option value="Programme Coordinator" selected="@(Model.User.Role == "Programme Coordinator")">Programme Coordinator</option>
+                            <option value="Academic Manager" selected="@(Model.User.Role == "Academic Manager")">Academic Manager</option>
+                        </select>
+                        <span asp-validation-for="User.Role" class="text-danger"></span>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">Save Changes</button>
+                </form>
+            }
+            else if (Model.SearchPerformed)
+            {
+                <p class="text-danger mt-3">User not found. Please check the name or email and try again.</p>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Custom CSS for Edit page to match existing styles -->
+<style>
+    .page-background {
+        background-color: #f7f9fc;
+        padding: 20px;
+        min-height: 100vh;
+    }
+
+    .login-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+    }
+
+    .login-box {
+        background-color: #ffffff;
+        padding: 2rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        max-width: 500px;
+        width: 100%;
+        text-align: center;
+    }
+
+    .login-title {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 2rem;
+        color: #333333;
+        margin-bottom: 1rem;
+    }
+
+    .login-subtitle {
+        font-family: 'Open Sans', sans-serif;
+        color: #666666;
+        margin-bottom: 2rem;
+    }
+
+    .form-control {
+        border: 1px solid #dddddd;
+        padding: 0.75rem;
+        margin-bottom: 1rem;
+        border-radius: 5px;
+        font-family: 'Open Sans', sans-serif;
+    }
+
+    .btn-primary {
+        background-color: #DE1B38;
+        color: #ffffff;
+        border: none;
+        padding: 0.75rem 2rem;
+        font-size: 1rem;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        width: 100%;
+    }
+
+        .btn-primary:hover {
+            background-color: #87071a;
+        }
+
+    .btn-success {
+        background-color: #28a745;
+        color: #ffffff;
+        border: none;
+        padding: 0.75rem 2rem;
+        font-size: 1rem;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        width: 100%;
+    }
+
+        .btn-success:hover {
+            background-color: #218838;
+        }
+</style>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

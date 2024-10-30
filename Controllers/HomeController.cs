@@ -18,12 +18,71 @@ namespace Contract_Monthly_Claim_System.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly ApplicationDbContext _context; // Add DbContext
+        // Mock data for demonstration purposes
+        private static List<EditViewModel.UserViewModel> users = new List<EditViewModel.UserViewModel>
+        {
+            new EditViewModel.UserViewModel { Name = "John Doe", Email = "john.doe@example.com", Role = "Lecturer" },
+            new EditViewModel.UserViewModel { Name = "Jane Smith", Email = "jane.smith@example.com", Role = "Programme Coordinator" },
+            new EditViewModel.UserViewModel { Name = "Alice Johnson", Email = "alice.johnson@example.com", Role = "Academic Manager" }
+        };
 
         // Inject DbContext in the constructor
         public HomeController(ILogger<HomeController> logger, ApplicationDbContext context)
         {
             _logger = logger;
             _context = context;
+        }
+
+        // GET: Edit
+        public IActionResult Edit()
+        {
+            var model = new EditViewModel();
+            return View(model);
+        }
+
+        // POST: Edit
+        [HttpPost]
+        public IActionResult Edit(EditViewModel model)
+        {
+            if (string.IsNullOrWhiteSpace(model.SearchTerm))
+            {
+                ModelState.AddModelError("", "Search term cannot be empty.");
+                return View(model);
+            }
+
+            // Simulating search for a user based on search term (could be email or name)
+            var user = users.FirstOrDefault(u => u.Email.Equals(model.SearchTerm, StringComparison.OrdinalIgnoreCase) ||
+                                                  u.Name.Equals(model.SearchTerm, StringComparison.OrdinalIgnoreCase));
+
+            if (user != null)
+            {
+                model.User = user;
+                model.SearchPerformed = true;
+            }
+            else
+            {
+                ModelState.AddModelError("", "User not found.");
+            }
+
+            return View(model);
+        }
+
+        // POST: Update User
+        [HttpPost]
+        public IActionResult UpdateUser(EditViewModel model)
+        {
+            if (ModelState.IsValid && model.User != null)
+            {
+                // Here, update the user in the database or the mock list
+                var userToUpdate = users.FirstOrDefault(u => u.Email.Equals(model.User.Email, StringComparison.OrdinalIgnoreCase));
+                if (userToUpdate != null)
+                {
+                    userToUpdate.Name = model.User.Name;
+                    userToUpdate.Role = model.User.Role; // Assuming role can be changed
+                }
+                return RedirectToAction("Index"); // Redirect to a suitable page after update
+            }
+            return View("Edit", model);
         }
 
         // GET: Submit Claims
