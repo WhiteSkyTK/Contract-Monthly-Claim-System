@@ -56,7 +56,7 @@
 
                                     @if (submissionInfo.ApprovalProcess != null)
                                     {
-                                        <p><strong>Feedback:</strong> @submissionInfo.ApprovalProcess.Feedback No feedback provided</p>
+                                        <p><strong>Feedback:</strong> @(string.IsNullOrEmpty(submissionInfo.ApprovalProcess.Feedback) ? "No feedback provided" : submissionInfo.ApprovalProcess.Feedback)</p>
                                         <p><strong>Approved/Rejected On:</strong> @submissionInfo.ApprovalProcess.ApprovalDate.ToString("dd MMM yyyy")</p>
                                         <p><strong>Program Coordinator:</strong> @submissionInfo.ApprovalProcess.Coordinator?.CoordinatorName @submissionInfo.ApprovalProcess.Coordinator?.CoordinatorSurname</p>
                                         <p><strong>Academic Manager:</strong> @submissionInfo.ApprovalProcess.Manager?.ManagerName @submissionInfo.ApprovalProcess.Manager?.ManagerSurname</p>
