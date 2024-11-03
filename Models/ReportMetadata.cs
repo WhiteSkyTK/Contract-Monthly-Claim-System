@@ -37,6 +37,5 @@ namespace Contract_Monthly_Claim_System.Models
 
         public string GeneratedBy { get; set; } // The user who generated the report
 
-        public ICollection<ManageClaimsViewModel> ManageClaimsViewModels { get; set; } = new List<ManageClaimsViewModel>();
     }
 }

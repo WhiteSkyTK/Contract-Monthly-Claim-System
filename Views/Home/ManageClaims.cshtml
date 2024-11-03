@@ -20,20 +20,17 @@
         <div class="functionality-section">
             <h2 class="available-functions-title">Available Functions</h2>
             <ul class="functionality-list">
-                @foreach (var claim in Model.ApprovedClaims)
-                {
-                    <li>
-                        <h3>Generate Invoices for Claim ID: @claim.ClaimID</h3>
-                        <p>Total Amount: @claim.TotalClaimAmount</p>
-                        <form asp-action="GenerateInvoice" method="post" style="display:inline;">
-                            <input type="hidden" name="ClaimID" value="@claim.ClaimID" />
-                            <input type="number" name="TotalClaimAmount" value="@claim.TotalClaimAmount" required />
-                            <input type="number" name="HoursWorked" value="@claim.HoursWorked" required />
-                            <input type="number" name="HourlyRate" value="@claim.HourlyRate" required />
-                            <button type="submit" class="btn btn-primary animated-btn">Generate Invoices</button>
-                        </form>
-                    </li>
-                }
+                <li>
+                    <h3>Generate Invoices</h3>
+                    <p>Automatically generate invoices summarizing approved claims for payment processing.</p>
+                    <form asp-action="GenerateInvoice" method="post" style="display:inline;">
+                        @foreach (var claim in Model.ApprovedClaims)
+                        {
+                            <input type="hidden" name="claimIds" value="@claim.ClaimID" />
+                        }
+                        <button type="submit" class="btn btn-primary animated-btn">Generate Invoices for All Approved Claims</button>
+                    </form>
+                </li>
                 <li>
                     <h3>View Invoices</h3>
                     <p>View previously generated invoices and download them as needed.</p>
@@ -48,7 +45,6 @@
         </div>
     </div>
 </div>
-
 
 <!-- Report Preview Modal -->
 <div class="modal fade" id="reportPreviewModal" tabindex="-1" role="dialog" aria-labelledby="reportPreviewModalLabel" aria-hidden="true">
@@ -73,9 +69,7 @@
 </div>
 
 @section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
+    await Html.RenderPartialAsync("_ValidationScriptsPartial");
     <script>
         function downloadReport() {
             window.location.href = '@Url.Action("DownloadReport", "Reports")';
@@ -90,6 +84,7 @@
             opacity: 0;
             transform: translateY(-20px);
         }
+
         to {
             opacity: 1;
             transform: translateY(0);
@@ -143,10 +138,10 @@
         padding: 0;
     }
 
-    .functionality-list li {
-        margin-bottom: 2rem;
-        animation: fadeIn 0.8s ease; /* Added animation to list items */
-    }
+        .functionality-list li {
+            margin-bottom: 2rem;
+            animation: fadeIn 0.8s ease; /* Added animation to list items */
+        }
 
     h3 {
         font-size: 1.5rem;
@@ -175,14 +170,14 @@
         text-align: left;
     }
 
-    .additional-info h2 {
-        font-size: 1.75rem;
-        color: #333;
-        margin-bottom: 1rem;
-    }
+        .additional-info h2 {
+            font-size: 1.75rem;
+            color: #333;
+            margin-bottom: 1rem;
+        }
 
-    .additional-info p {
-        font-family: 'Open Sans', sans-serif;
-        color: #666666;
-    }
+        .additional-info p {
+            font-family: 'Open Sans', sans-serif;
+            color: #666666;
+        }
 </style>

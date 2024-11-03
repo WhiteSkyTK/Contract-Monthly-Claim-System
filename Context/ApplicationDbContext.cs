@@ -22,7 +22,6 @@ namespace Contract_Monthly_Claim_System.Context
         public DbSet<HR> HRs { get; set; }
         public DbSet<ReportMetadata> ReportMetadata { get; set; }
 
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -86,6 +85,11 @@ namespace Contract_Monthly_Claim_System.Context
                 .WithMany(ap => ap.ReportMetadata)
                 .HasForeignKey(rm => rm.ApprovalID)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // Configure TotalApprovedClaims column type
+            modelBuilder.Entity<ReportMetadata>()
+                .Property(r => r.TotalApprovedClaims)
+                .HasColumnType("decimal(18,2)"); // Adjust precision and scale as necessary
         }
     }
 }

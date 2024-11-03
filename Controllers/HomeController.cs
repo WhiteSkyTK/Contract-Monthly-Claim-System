@@ -197,52 +197,78 @@ namespace Contract_Monthly_Claim_System.Controllers
         // Action for the ManageClaims page
         public IActionResult ManageClaims()
         {
-            var viewModel = new ManageClaimsViewModel
-            {
-                ApprovedClaims = _claimsService.GetApprovedClaims(), // Assuming this method returns a list of approved claims
-                Lecturers = _lecturerService.GetAllLecturers(),
-                ProgrammeCoordinators = _programmeCoordinatorService.GetAll(),
-                AcademicManagers = _academicManagerService.GetAll(),
-                ReportMetadata = _reportMetadataService.GetAllReports()
-            };
-            return View(viewModel);
+            var model = new ManageClaimsViewModel();
+
+            // Fetch only approved claims from the database
+            model.ApprovedClaims = _context.Claims
+                .Where(c => c.Status == "Approved")
+                .ToList();
+
+            return View(model);
         }
 
 
         // Action to generate a report
         [HttpPost]
-        public IActionResult GenerateInvoice(Claims claim)
+        public IActionResult GenerateInvoice(List<int> claimIds) // Change to accept multiple Claim IDs
         {
-            // Log the incoming claim data
-            Console.WriteLine($"Claim ID: {claim?.ClaimID}, TotalClaimAmount: {claim?.TotalClaimAmount}, HoursWorked: {claim?.HoursWorked}, HourlyRate: {claim?.HourlyRate}");
-
-            if (claim == null || claim.TotalClaimAmount <= 0)
+            if (claimIds == null || claimIds.Count == 0)
             {
-                TempData["ErrorMessage"] = "Invalid claim data. Please check your input.";
+                _logger.LogWarning("No claims were selected for invoice generation.");
+                TempData["ErrorMessage"] = "No claims selected.";
                 return RedirectToAction("ManageClaims");
             }
 
-            // Create the invoice and save metadata
-            var invoiceFilePath = GenerateInvoicePdf(claim);
-
-            var reportMetadata = new ReportMetadata
+            foreach (var claimId in claimIds)
             {
-                ReportName = $"Invoice_{claim.ClaimID}.pdf",
-                ReportType = "Invoice",
-                DateGenerated = DateTime.Now,
-                FilePath = invoiceFilePath,
-                ClaimID = claim.ClaimID,
-                TotalApprovedClaims = claim.TotalClaimAmount,  // Store the total amount of this specific claim
-                GeneratedBy = User.Identity.Name
-            };
+                _logger.LogInformation($"Generating invoice for Claim ID: {claimId}");
 
-            _context.ReportMetadata.Add(reportMetadata);
-            _context.SaveChanges();
+                var claim = _context.Claims
+                    .Include(c => c.Lecturer)
+                    .FirstOrDefault(c => c.ClaimID == claimId);
 
-            // Update the total approved claims amount
-            UpdateTotalApprovedClaims();
+                if (claim == null)
+                {
+                    _logger.LogWarning($"Claim not found for Claim ID: {claimId}");
+                    TempData["ErrorMessage"] = "Invalid claim data. Please check your input.";
+                    continue; // Skip to the next claim ID
+                }
 
-            TempData["Message"] = "Invoice generated successfully!";
+                if (claim.TotalClaimAmount <= 0)
+                {
+                    _logger.LogWarning($"Claim ID: {claimId} has a total amount of zero or less.");
+                    TempData["ErrorMessage"] = "Invalid claim data. Please check your input.";
+                    continue; // Skip to the next claim ID
+                }
+
+                var invoiceFilePath = GenerateInvoicePdf(claim);
+
+                var reportMetadata = new ReportMetadata
+                {
+                    ReportName = $"Invoice_{claim.ClaimID}.pdf",
+                    ReportType = "Invoice",
+                    DateGenerated = DateTime.Now,
+                    FilePath = invoiceFilePath,
+                    ClaimID = claim.ClaimID,
+                    TotalApprovedClaims = claim.TotalClaimAmount,
+                    GeneratedBy = User.Identity.Name
+                };
+
+                _context.ReportMetadata.Add(reportMetadata);
+            }
+
+            // Save changes once after processing all claims
+            var changesSaved = _context.SaveChanges() > 0;
+            if (changesSaved)
+            {
+                TempData["Message"] = "Invoices generated successfully!";
+            }
+            else
+            {
+                _logger.LogError("Failed to save invoice metadata.");
+                TempData["ErrorMessage"] = "Failed to save invoice metadata.";
+            }
+
             return RedirectToAction("ViewInvoices");
         }
 
@@ -257,6 +283,7 @@ namespace Contract_Monthly_Claim_System.Controllers
         public void UpdateTotalApprovedClaims()
         {
             var totalApproved = GetTotalApprovedClaimsAmount();
+            _logger.LogInformation($"Total approved claims amount: {totalApproved}");
 
             // Assuming you have a ClaimSummary model and table set up
             var summary = _context.ReportMetadata.FirstOrDefault();
@@ -265,10 +292,12 @@ namespace Contract_Monthly_Claim_System.Controllers
             {
                 summary = new ReportMetadata { TotalApprovedClaims = totalApproved };
                 _context.ReportMetadata.Add(summary);
+                _logger.LogInformation("Created new ReportMetadata summary entry.");
             }
             else
             {
                 summary.TotalApprovedClaims = totalApproved;
+                _logger.LogInformation("Updated existing ReportMetadata summary entry.");
             }
 
             _context.SaveChanges();
@@ -278,21 +307,31 @@ namespace Contract_Monthly_Claim_System.Controllers
         {
             var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/invoices", $"Invoice_{claim.ClaimID}.pdf");
 
-            using (var stream = new FileStream(filePath, FileMode.Create))
+            try
             {
-                var document = new iTextSharp.text.Document();
-                PdfWriter.GetInstance(document, stream);
-                document.Open();
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    var document = new iTextSharp.text.Document();
+                    PdfWriter.GetInstance(document, stream);
+                    document.Open();
 
-                // Add more detailed content
-                document.Add(new Paragraph($"Invoice ID: {claim.ClaimID}"));
-                document.Add(new Paragraph($"Lecturer: {claim.Lecturer.LecturerName}")); // Assuming Lecturer has a Name property
-                document.Add(new Paragraph($"Hours Worked: {claim.HoursWorked}"));
-                document.Add(new Paragraph($"Hourly Rate: {claim.HourlyRate:C}"));
-                document.Add(new Paragraph($"Total Amount: {claim.TotalClaimAmount:C}"));
-                document.Add(new Paragraph($"Generated On: {DateTime.Now}"));
+                    // Add content to the PDF
+                    document.Add(new Paragraph($"Invoice ID: {claim.ClaimID}"));
+                    document.Add(new Paragraph($"Lecturer: {claim.Lecturer.LecturerName}"));
+                    document.Add(new Paragraph($"Hours Worked: {claim.HoursWorked}"));
+                    document.Add(new Paragraph($"Hourly Rate: {claim.HourlyRate:C}"));
+                    document.Add(new Paragraph($"Total Amount: {claim.TotalClaimAmount:C}"));
+                    document.Add(new Paragraph($"Generated On: {DateTime.Now}"));
 
-                document.Close();
+                    document.Close();
+                }
+                // Debugging step: Log successful PDF generation
+                _logger.LogInformation($"Invoice PDF generated at: {filePath}");
+            }
+            catch (Exception ex)
+            {
+                // Log the exception (or handle it as needed)
+                _logger.LogError(ex, "Error generating invoice PDF.");
             }
 
             return filePath;
@@ -304,6 +343,7 @@ namespace Contract_Monthly_Claim_System.Controllers
             var report = _context.ReportMetadata.Find(id);
             if (report == null || report.ReportType != "Invoice")
             {
+                _logger.LogWarning($"Invoice not found for ID: {id}");
                 TempData["ErrorMessage"] = "Invoice not found.";
                 return RedirectToAction("ViewInvoices");
             }
@@ -322,6 +362,7 @@ namespace Contract_Monthly_Claim_System.Controllers
 
             return View(invoices);
         }
+
 
         // Action to update lecturer information
         [HttpPost]
