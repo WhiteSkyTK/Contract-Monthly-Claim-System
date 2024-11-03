@@ -1,0 +1,138 @@
+﻿@model IEnumerable<Contract_Monthly_Claim_System.Models.ReportMetadata>
+@{
+    ViewData["Title"] = "View Invoices";
+}
+
+<div class="container page-background">
+    <div class="view-invoices-container fade-in">
+        <h1 class="page-title">View Invoices</h1>
+        <p class="page-subtitle">List of generated invoices</p>
+
+        @if (TempData["Message"] != null)
+        {
+            <div class="alert alert-success fade-in">@TempData["Message"]</div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger fade-in">@TempData["ErrorMessage"]</div>
+        }
+
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Invoice Name</th>
+                    <th>Date Generated</th>
+                    <th>Download</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var invoice in Model)
+                {
+                    <tr>
+                        <td>@invoice.ReportName</td>
+                        <td>@invoice.DateGenerated.ToShortDateString()</td>
+                        <td>
+                            <a href="@Url.Action("DownloadInvoice", "Home", new { id = invoice.ReportId })" class="btn btn-primary animated-btn">Download</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <div class="additional-info">
+            <h2>Tools and Technologies</h2>
+            <p>Utilizing ASP.NET Web Forms or ASP.NET Core Razor Pages for building the HR interface. Integrate reporting libraries like Crystal Reports or SQL Server Reporting Services (SSRS) for generating invoices or reports. Leverage Entity Framework for data access operations, and use ASP.NET Identity for user authentication and authorization.</p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
+
+<!-- Custom CSS for View Invoices page to match existing styles -->
+<style>
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .fade-in {
+        animation: fadeIn 1s ease;
+    }
+
+    .page-background {
+        background-color: #f7f9fc;
+        padding: 20px;
+        min-height: 100vh;
+    }
+
+    .view-invoices-container {
+        max-width: 800px;
+        margin: auto;
+        text-align: center;
+    }
+
+    .page-title {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 2.5rem;
+        color: #333333;
+        margin-bottom: 1rem;
+    }
+
+    .page-subtitle {
+        font-family: 'Open Sans', sans-serif;
+        color: #666666;
+        margin-bottom: 2rem;
+    }
+
+    .table {
+        margin-top: 20px;
+    }
+
+        .table th,
+        .table td {
+            text-align: center;
+        }
+
+    .additional-info {
+        margin-top: 4rem;
+        text-align: left;
+    }
+
+        .additional-info h2 {
+            font-size: 1.75rem;
+            color: #333;
+            margin-bottom: 1rem;
+        }
+
+        .additional-info p {
+            font-family: 'Open Sans', sans-serif;
+            color: #666666;
+        }
+
+    .btn-primary {
+        background-color: #DE1B38;
+        color: #ffffff;
+        border: none;
+        padding: 0.75rem 2rem;
+        font-size: 1rem;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease; /* Added transform for hover effect */
+    }
+
+    .animated-btn:hover {
+        background-color: #87071a;
+        transform: translateY(-2px); /* Subtle lift on hover */
+    }
+</style>

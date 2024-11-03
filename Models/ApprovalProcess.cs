@@ -26,6 +26,8 @@ namespace Contract_Monthly_Claim_System.Models
         public string? Feedback { get; set; }
 
         public ICollection<ClaimSubmissionInfo> infos { get; set; } = new List<ClaimSubmissionInfo>();
+        public ICollection<ReportMetadata> ReportMetadata { get; set; } = new List<ReportMetadata>();
+
     }
 
 }

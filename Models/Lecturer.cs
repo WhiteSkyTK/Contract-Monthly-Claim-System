@@ -19,6 +19,8 @@ namespace Contract_Monthly_Claim_System.Models
         public string LecturerPassword { get; set; }
 
         public ICollection<Claims> Claims { get; set; } = new List<Claims>();
+        public ICollection<ReportMetadata> ReportMetadata { get; set; } = new List<ReportMetadata>();
+
     }
 }
 

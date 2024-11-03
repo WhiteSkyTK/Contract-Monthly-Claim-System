@@ -11,6 +11,10 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
+using System.Reflection.Metadata;
+using iTextSharp.text;
+using iTextSharp.text.pdf;
+
 
 namespace Contract_Monthly_Claim_System.Controllers
 {
@@ -193,21 +197,130 @@ namespace Contract_Monthly_Claim_System.Controllers
         // Action for the ManageClaims page
         public IActionResult ManageClaims()
         {
-            var model = new ManageClaimsViewModel();
-            // Populate the model with data (for demonstration purposes, consider fetching from DB)
-            return View(model);
+            var viewModel = new ManageClaimsViewModel
+            {
+                ApprovedClaims = _claimsService.GetApprovedClaims(), // Assuming this method returns a list of approved claims
+                Lecturers = _lecturerService.GetAllLecturers(),
+                ProgrammeCoordinators = _programmeCoordinatorService.GetAll(),
+                AcademicManagers = _academicManagerService.GetAll(),
+                ReportMetadata = _reportMetadataService.GetAllReports()
+            };
+            return View(viewModel);
         }
+
 
         // Action to generate a report
         [HttpPost]
-        public IActionResult GenerateReport()
+        public IActionResult GenerateInvoice(Claims claim)
         {
-            // Logic to generate report
-            // Example: Call a service to generate and return a report
-            // For demonstration, we'll just redirect back to ManageClaims
+            // Log the incoming claim data
+            Console.WriteLine($"Claim ID: {claim?.ClaimID}, TotalClaimAmount: {claim?.TotalClaimAmount}, HoursWorked: {claim?.HoursWorked}, HourlyRate: {claim?.HourlyRate}");
 
-            TempData["Message"] = "Report generated successfully!";
-            return RedirectToAction("ManageClaims");
+            if (claim == null || claim.TotalClaimAmount <= 0)
+            {
+                TempData["ErrorMessage"] = "Invalid claim data. Please check your input.";
+                return RedirectToAction("ManageClaims");
+            }
+
+            // Create the invoice and save metadata
+            var invoiceFilePath = GenerateInvoicePdf(claim);
+
+            var reportMetadata = new ReportMetadata
+            {
+                ReportName = $"Invoice_{claim.ClaimID}.pdf",
+                ReportType = "Invoice",
+                DateGenerated = DateTime.Now,
+                FilePath = invoiceFilePath,
+                ClaimID = claim.ClaimID,
+                TotalApprovedClaims = claim.TotalClaimAmount,  // Store the total amount of this specific claim
+                GeneratedBy = User.Identity.Name
+            };
+
+            _context.ReportMetadata.Add(reportMetadata);
+            _context.SaveChanges();
+
+            // Update the total approved claims amount
+            UpdateTotalApprovedClaims();
+
+            TempData["Message"] = "Invoice generated successfully!";
+            return RedirectToAction("ViewInvoices");
+        }
+
+        public decimal GetTotalApprovedClaimsAmount()
+        {
+            return _context.Claims
+                .Where(c => c.Status == "Approved")
+                .Sum(c => c.TotalClaimAmount);
+        }
+
+        // Method to update the total approved claims
+        public void UpdateTotalApprovedClaims()
+        {
+            var totalApproved = GetTotalApprovedClaimsAmount();
+
+            // Assuming you have a ClaimSummary model and table set up
+            var summary = _context.ReportMetadata.FirstOrDefault();
+
+            if (summary == null)
+            {
+                summary = new ReportMetadata { TotalApprovedClaims = totalApproved };
+                _context.ReportMetadata.Add(summary);
+            }
+            else
+            {
+                summary.TotalApprovedClaims = totalApproved;
+            }
+
+            _context.SaveChanges();
+        }
+
+        private string GenerateInvoicePdf(Claims claim)
+        {
+            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/invoices", $"Invoice_{claim.ClaimID}.pdf");
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                var document = new iTextSharp.text.Document();
+                PdfWriter.GetInstance(document, stream);
+                document.Open();
+
+                // Add more detailed content
+                document.Add(new Paragraph($"Invoice ID: {claim.ClaimID}"));
+                document.Add(new Paragraph($"Lecturer: {claim.Lecturer.LecturerName}")); // Assuming Lecturer has a Name property
+                document.Add(new Paragraph($"Hours Worked: {claim.HoursWorked}"));
+                document.Add(new Paragraph($"Hourly Rate: {claim.HourlyRate:C}"));
+                document.Add(new Paragraph($"Total Amount: {claim.TotalClaimAmount:C}"));
+                document.Add(new Paragraph($"Generated On: {DateTime.Now}"));
+
+                document.Close();
+            }
+
+            return filePath;
+        }
+
+        // Action to download a report by ID
+        public IActionResult DownloadInvoice(int id)
+        {
+            var report = _context.ReportMetadata.Find(id);
+            if (report == null || report.ReportType != "Invoice")
+            {
+                TempData["ErrorMessage"] = "Invoice not found.";
+                return RedirectToAction("ViewInvoices");
+            }
+
+            var filePath = report.FilePath;
+            var fileName = report.ReportName;
+            return PhysicalFile(filePath, "application/pdf", fileName);
+        }
+
+        // Action to view invoices
+        public IActionResult ViewInvoices()
+        {
+            var invoices = _context.ReportMetadata
+                .Where(r => r.ReportType == "Invoice")
+                .ToList();
+
+            return View(invoices);
         }
 
         // Action to update lecturer information

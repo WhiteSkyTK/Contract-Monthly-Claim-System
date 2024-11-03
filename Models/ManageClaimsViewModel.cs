@@ -9,6 +9,7 @@ namespace Contract_Monthly_Claim_System.Models
         public List<Lecturer> Lecturers { get; set; }
         public List<ProgrammeCoordinator> ProgrammeCoordinators { get; set; }
         public List<AcademicManager> AcademicManagers { get; set; }
+        public List<ReportMetadata> ReportMetadata { get; set; }
 
         public ManageClaimsViewModel()
         {

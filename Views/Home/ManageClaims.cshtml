@@ -20,17 +20,24 @@
         <div class="functionality-section">
             <h2 class="available-functions-title">Available Functions</h2>
             <ul class="functionality-list">
+                @foreach (var claim in Model.ApprovedClaims)
+                {
+                    <li>
+                        <h3>Generate Invoices for Claim ID: @claim.ClaimID</h3>
+                        <p>Total Amount: @claim.TotalClaimAmount</p>
+                        <form asp-action="GenerateInvoice" method="post" style="display:inline;">
+                            <input type="hidden" name="ClaimID" value="@claim.ClaimID" />
+                            <input type="number" name="TotalClaimAmount" value="@claim.TotalClaimAmount" required />
+                            <input type="number" name="HoursWorked" value="@claim.HoursWorked" required />
+                            <input type="number" name="HourlyRate" value="@claim.HourlyRate" required />
+                            <button type="submit" class="btn btn-primary animated-btn">Generate Invoices</button>
+                        </form>
+                    </li>
+                }
                 <li>
-                    <h3>Generate Invoices</h3>
-                    <p>Automatically generate invoices or reports summarizing approved claims for payment processing.</p>
-                    <form asp-action="GenerateReport" method="post" style="display:inline;">
-                        <button type="submit" class="btn btn-primary animated-btn">Generate Invoices</button>
-                    </form>
-                </li>
-                <li>
-                    <h3>View Reports</h3>
-                    <p>Access various reports for detailed insights into claims and lecturer performance.</p>
-                    <button class="btn btn-primary animated-btn" onclick="location.href='@Url.Action("ViewReports", "Home")'">View Reports</button>
+                    <h3>View Invoices</h3>
+                    <p>View previously generated invoices and download them as needed.</p>
+                    <a href="@Url.Action("ViewInvoices", "Home")" class="btn btn-primary animated-btn">View Invoices</a>
                 </li>
             </ul>
         </div>
@@ -41,6 +48,40 @@
         </div>
     </div>
 </div>
+
+
+<!-- Report Preview Modal -->
+<div class="modal fade" id="reportPreviewModal" tabindex="-1" role="dialog" aria-labelledby="reportPreviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reportPreviewModalLabel">Report Preview</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Placeholder for the report preview -->
+                <iframe id="reportPreviewIframe" src="@Url.Action("PreviewReport", "Home")" frameborder="0" style="width: 100%; height: 500px;"></iframe>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="downloadReport()">Download PDF</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        function downloadReport() {
+            window.location.href = '@Url.Action("DownloadReport", "Reports")';
+        }
+    </script>
+}
 
 <!-- Custom CSS for Manage Claims page to match existing styles -->
 <style>
@@ -145,9 +186,3 @@
         color: #666666;
     }
 </style>
-
-@section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
-}

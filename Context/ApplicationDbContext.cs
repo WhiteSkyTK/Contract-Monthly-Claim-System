@@ -20,6 +20,8 @@ namespace Contract_Monthly_Claim_System.Context
         public DbSet<ClaimsModules> ClaimsModules { get; set; }
         public DbSet<Users> Users { get; set; }
         public DbSet<HR> HRs { get; set; }
+        public DbSet<ReportMetadata> ReportMetadata { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -40,6 +42,14 @@ namespace Contract_Monthly_Claim_System.Context
                 .HasForeignKey(cm => cm.ClaimID)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // Configure foreign key relationship with Claims
+            modelBuilder.Entity<ClaimsModules>()
+                .HasOne(cm => cm.Claims)
+                .WithMany(c => c.ClaimsModules)
+                .HasForeignKey(cm => cm.ClaimID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Configure foreign key relationship with Module
             modelBuilder.Entity<ClaimsModules>()
                 .HasOne(cm => cm.Module)
                 .WithMany(m => m.ClaimsModules)
@@ -47,17 +57,35 @@ namespace Contract_Monthly_Claim_System.Context
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<ApprovalProcess>()
-                 .HasOne(a => a.Manager)
-                 .WithMany(am => am.ApprovalProcesses)
-                 .HasForeignKey(a => a.ManagerID) // Ensure you have this foreign key defined
-                 .OnDelete(DeleteBehavior.Restrict);
+                .HasOne(a => a.Manager)
+                .WithMany(am => am.ApprovalProcesses)
+                .HasForeignKey(a => a.ManagerID)
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<ApprovalProcess>()
                 .HasOne(a => a.Coordinator)
                 .WithMany(pc => pc.ApprovalProcesses)
-                .HasForeignKey(a => a.CoordinatorID) // Ensure you have this foreign key defined
+                .HasForeignKey(a => a.CoordinatorID)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // Add foreign key relationships for ReportMetadata
+            modelBuilder.Entity<ReportMetadata>()
+                .HasOne(rm => rm.Claims)
+                .WithMany(c => c.ReportMetadata)
+                .HasForeignKey(rm => rm.ClaimID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ReportMetadata>()
+                .HasOne(rm => rm.Lecturer)
+                .WithMany(l => l.ReportMetadata)
+                .HasForeignKey(rm => rm.LecturerID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ReportMetadata>()
+                .HasOne(rm => rm.ApprovalProcess)
+                .WithMany(ap => ap.ReportMetadata)
+                .HasForeignKey(rm => rm.ApprovalID)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }
