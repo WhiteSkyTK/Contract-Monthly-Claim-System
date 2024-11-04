@@ -86,168 +86,130 @@ namespace Contract_Monthly_Claim_System.Controllers
             return RedirectToAction("ManageModules");
         }
 
-        public IActionResult Edit(int? userId)
+        public async Task<IActionResult> ClosedClaims()
         {
-            if (!userId.HasValue)
-            {
-                return NotFound();
-            }
+            // Retrieve claims that are either approved or rejected
+            var closedClaims = await _context.Claims
+                                             .Include(c => c.Lecturer) // Ensure Lecturer is loaded
+                                             .Include(c => c.ClaimsModules)
+                                                 .ThenInclude(cm => cm.Module) // Include related modules
+                                             .Include(c => c.SupportingDocuments) // Include documents
+                                             .Include(c => c.ApprovalProcesses) // Include approvals
+                                             .Where(c => c.Status == "Approved" || c.Status == "Rejected")
+                                             .ToListAsync();
 
-            var userToEdit = _context.Users.Find(userId.Value);
-            if (userToEdit == null)
-            {
-                return NotFound();
-            }
+            // Pass the closed claims to the view
+            return View(closedClaims);
+        }
 
-            var model = new EditViewModel
+        public IActionResult ManageUsers()
+        {
+            var viewModel = new EditViewModel
             {
                 Lecturers = _context.Lecturers.ToList(),
                 ProgrammeCoordinators = _context.ProgrammeCoordinators.ToList(),
-                AcademicManagers = _context.AcademicManagers.ToList(),
+                AcademicManagers = _context.AcademicManagers.ToList()
+            };
+            return View(viewModel);
+        }
+
+        public IActionResult EditUser(int id, string role)
+        {
+            var viewModel = new EditViewModel
+            {
+                Role = role // Set the role here
             };
 
-            // Populate the model based on the user role
-            switch (userToEdit.Role)
+            switch (role)
             {
                 case "Lecturer":
-                    model.Lecturer = _context.Lecturers.Find(userToEdit.userID);
+                    viewModel.Lecturer = _context.Lecturers.FirstOrDefault(l => l.LecturerID == id);
+                    viewModel.Role = "Lecturer";
                     break;
-                case "Programme Coordinator":
-                    model.ProgrammeCoordinator = _context.ProgrammeCoordinators.Find(userToEdit.userID);
+                case "ProgrammeCoordinator":
+                    viewModel.ProgrammeCoordinator = _context.ProgrammeCoordinators.FirstOrDefault(pc => pc.CoordinatorID == id);
+                    viewModel.Role = "ProgrammeCoordinator";
                     break;
-                case "Academic Manager":
-                    model.AcademicManager = _context.AcademicManagers.Find(userToEdit.userID);
+                case "AcademicManager":
+                    viewModel.AcademicManager = _context.AcademicManagers.FirstOrDefault(am => am.ManagerID == id);
+                    viewModel.Role = "AcademicManager";
                     break;
             }
 
-            return View(model);
-        }
-
-        // Action to fetch user data for editing
-        [HttpGet]
-        public IActionResult GetUserData(int id, string role)
-        {
-            // Fetch the user by ID
-            var user = _context.Users.Find(id);
-            if (user == null)
+            if (viewModel.Lecturer == null && viewModel.ProgrammeCoordinator == null && viewModel.AcademicManager == null)
             {
                 return NotFound();
             }
 
-            // Initialize EditViewModel to hold the user data
-            var model = new EditViewModel();
-
-            // Use the role to fetch the corresponding user details
-            switch (user.Role)
-            {
-                case "Lecturer":
-                    model.Lecturer = _context.Lecturers.FirstOrDefault(l => l.LecturerID == id);
-                    break;
-
-                case "Programme Coordinator":
-                    model.ProgrammeCoordinator = _context.ProgrammeCoordinators.FirstOrDefault(c => c.CoordinatorID == id);
-                    break;
-
-                case "Academic Manager":
-                    model.AcademicManager = _context.AcademicManagers.FirstOrDefault(m => m.ManagerID == id);
-                    break;
-
-                default:
-                    return NotFound();
-            }
-
-            if (model.Lecturer == null && model.ProgrammeCoordinator == null && model.AcademicManager == null)
-            {
-                return NotFound();
-            }
-
-            // Return the user details as JSON
-            return Json(new
-            {
-                userID = user.userID,
-                Name = user.Role switch
-                {
-                    "Lecturer" => model.Lecturer.LecturerName,
-                    "Programme Coordinator" => model.ProgrammeCoordinator.CoordinatorName,
-                    "Academic Manager" => model.AcademicManager.ManagerName,
-                    _ => string.Empty
-                },
-                Surname = user.Role switch
-                {
-                    "Lecturer" => model.Lecturer.LecturerSurname,
-                    "Programme Coordinator" => model.ProgrammeCoordinator.CoordinatorSurname,
-                    "Academic Manager" => model.AcademicManager.ManagerSurname,
-                    _ => string.Empty
-                },
-                Email = user.Role switch
-                {
-                    "Lecturer" => model.Lecturer.LecturerEmail,
-                    "Programme Coordinator" => model.ProgrammeCoordinator.CoordinatorEmail,
-                    "Academic Manager" => model.AcademicManager.ManagerEmail,
-                    _ => string.Empty
-                },
-                Phone = user.Role switch
-                {
-                    "Lecturer" => model.Lecturer.LecturerPhone,
-                    "Programme Coordinator" => model.ProgrammeCoordinator.CoordinatorPhone,
-                    "Academic Manager" => model.AcademicManager.ManagerPhone,
-                    _ => string.Empty
-                },
-                Role = user.Role
-            });
+            return View("EditUser", viewModel);
         }
 
-        // POST: Update User
+
         [HttpPost]
-        public IActionResult UpdateUser(EditViewModel model)
+        public IActionResult EditUser(EditViewModel model)
         {
+            Console.WriteLine("EditUser POST method reached.");
+            foreach (var modelState in ModelState)
+            {
+                foreach (var error in modelState.Value.Errors)
+                {
+                    Console.WriteLine($"Key: {modelState.Key}, Error: {error.ErrorMessage}");
+                }
+            }
+            // Debugging output
+            Console.WriteLine($"Role: {model.Role}");
+            Console.WriteLine($"AcademicManager: {model.AcademicManager != null}");
+            Console.WriteLine($"ProgrammeCoordinator: {model.ProgrammeCoordinator != null}");
+            Console.WriteLine($"LecturerID: {model.Lecturer?.LecturerID}");
             if (ModelState.IsValid)
             {
-                // Update based on the type of user in the EditViewModel
-                if (model.Lecturer != null)
+                var errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)).ToList();
+                Console.WriteLine($"Validation errors: {string.Join(", ", errors)}");
+                switch (model.Role)
                 {
-                    var lecturerToUpdate = _context.Lecturers.Find(model.Lecturer.LecturerID);
-                    if (lecturerToUpdate != null)
-                    {
-                        lecturerToUpdate.LecturerName = model.Lecturer.LecturerName;
-                        lecturerToUpdate.LecturerSurname = model.Lecturer.LecturerSurname;
-                        lecturerToUpdate.LecturerEmail = model.Lecturer.LecturerEmail;
-                        lecturerToUpdate.LecturerPhone = model.Lecturer.LecturerPhone;
-                    }
-                }
-                else if (model.ProgrammeCoordinator != null)
-                {
-                    var coordinatorToUpdate = _context.ProgrammeCoordinators.Find(model.ProgrammeCoordinator.CoordinatorID);
-                    if (coordinatorToUpdate != null)
-                    {
-                        coordinatorToUpdate.CoordinatorName = model.ProgrammeCoordinator.CoordinatorName;
-                        coordinatorToUpdate.CoordinatorSurname = model.ProgrammeCoordinator.CoordinatorSurname;
-                        coordinatorToUpdate.CoordinatorEmail = model.ProgrammeCoordinator.CoordinatorEmail;
-                        coordinatorToUpdate.CoordinatorPhone = model.ProgrammeCoordinator.CoordinatorPhone;
-                    }
-                }
-                else if (model.AcademicManager != null)
-                {
-                    var managerToUpdate = _context.AcademicManagers.Find(model.AcademicManager.ManagerID);
-                    if (managerToUpdate != null)
-                    {
-                        managerToUpdate.ManagerName = model.AcademicManager.ManagerName;
-                        managerToUpdate.ManagerSurname = model.AcademicManager.ManagerSurname;
-                        managerToUpdate.ManagerEmail = model.AcademicManager.ManagerEmail;
-                        managerToUpdate.ManagerPhone = model.AcademicManager.ManagerPhone;
-                    }
+                    case "Lecturer":
+                        var lecturer = _context.Lecturers.FirstOrDefault(l => l.LecturerID == model.Lecturer.LecturerID);
+                        if (lecturer != null)
+                        {
+                            lecturer.LecturerName = model.Lecturer.LecturerName;
+                            lecturer.LecturerSurname = model.Lecturer.LecturerSurname;
+                            lecturer.LecturerEmail = model.Lecturer.LecturerEmail;
+                            lecturer.LecturerPhone = model.Lecturer.LecturerPhone;
+                            _context.Lecturers.Update(lecturer);
+                        }
+                        break;
+                    case "ProgrammeCoordinator":
+                        var coordinator = _context.ProgrammeCoordinators.FirstOrDefault(pc => pc.CoordinatorID == model.ProgrammeCoordinator.CoordinatorID);
+                        if (coordinator != null)
+                        {
+                            coordinator.CoordinatorName = model.ProgrammeCoordinator.CoordinatorName;
+                            coordinator.CoordinatorSurname = model.ProgrammeCoordinator.CoordinatorSurname;
+                            coordinator.CoordinatorEmail = model.ProgrammeCoordinator.CoordinatorEmail;
+                            coordinator.CoordinatorPhone = model.ProgrammeCoordinator.CoordinatorPhone;
+                            _context.ProgrammeCoordinators.Update(coordinator);
+                        }
+                        break;
+                    case "AcademicManager":
+                        var manager = _context.AcademicManagers.FirstOrDefault(am => am.ManagerID == model.AcademicManager.ManagerID);
+                        if (manager != null)
+                        {
+                            manager.ManagerName = model.AcademicManager.ManagerName;
+                            manager.ManagerSurname = model.AcademicManager.ManagerSurname;
+                            manager.ManagerEmail = model.AcademicManager.ManagerEmail;
+                            manager.ManagerPhone = model.AcademicManager.ManagerPhone;
+                            _context.AcademicManagers.Update(manager);
+                        }
+                        break;
+                    default:
+                        return NotFound();
                 }
 
-                // Save changes to the database
                 _context.SaveChanges();
-                TempData["Message"] = "User updated successfully!";
-
-                // Redirect to the Edit action with the correct user ID
-                return RedirectToAction("Edit", new { userId = model.Lecturer?.LecturerID ?? model.ProgrammeCoordinator?.CoordinatorID ?? model.AcademicManager?.ManagerID });
+                TempData["Message"] = "User details updated successfully!";
+                return RedirectToAction("ManageUsers");
             }
 
-            // If model state is invalid, return to the Edit view with the current model
-            return View("Edit", model);
+            return View("EditUser", model);
         }
 
         // Action for the ManageClaims page
@@ -1131,7 +1093,6 @@ namespace Contract_Monthly_Claim_System.Controllers
         {
             return RedirectToAction("TrackClaims");
         }
-
 
         // GET: Register (Displays the registration form)
         public IActionResult Register()

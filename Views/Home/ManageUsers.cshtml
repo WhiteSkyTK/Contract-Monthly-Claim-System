@@ -1,0 +1,171 @@
+﻿@model Contract_Monthly_Claim_System.Models.EditViewModel
+
+<h1 class="page-title">Manage Users</h1>
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-success message-alert">@TempData["Message"]</div>
+}
+
+<!-- Lecturers Section -->
+<h2>Lecturers</h2>
+<div class="table-container">
+    <table class="table module-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var lecturer in Model.Lecturers)
+            {
+                <tr>
+                    <td>@lecturer.LecturerName @lecturer.LecturerSurname</td>
+                    <td>@lecturer.LecturerEmail</td>
+                    <td>@lecturer.LecturerPhone</td>
+                    <td>
+                        <a asp-action="EditUser" asp-route-id="@lecturer.LecturerID" asp-route-role="Lecturer" class="btn btn-primary action-btn">Edit</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Programme Coordinators Section -->
+<h2>Programme Coordinators</h2>
+<div class="table-container">
+    <table class="table module-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var coordinator in Model.ProgrammeCoordinators)
+            {
+                <tr>
+                    <td>@coordinator.CoordinatorName @coordinator.CoordinatorSurname</td>
+                    <td>@coordinator.CoordinatorEmail</td>
+                    <td>@coordinator.CoordinatorPhone</td>
+                    <td>
+                        <a asp-action="EditUser" asp-route-id="@coordinator.CoordinatorID" asp-route-role="ProgrammeCoordinator" class="btn btn-primary action-btn">Edit</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Academic Managers Section -->
+<h2>Academic Managers</h2>
+<div class="table-container">
+    <table class="table module-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var manager in Model.AcademicManagers)
+            {
+                <tr>
+                    <td>@manager.ManagerName @manager.ManagerSurname</td>
+                    <td>@manager.ManagerEmail</td>
+                    <td>@manager.ManagerPhone</td>
+                    <td>
+                        <a asp-action="EditUser" asp-route-id="@manager.ManagerID" asp-route-role="AcademicManager" class="btn btn-primary action-btn">Edit</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+
+<style>
+    /* Global Styles */
+    .page-title {
+        font-size: 2rem;
+        color: #333;
+        margin-bottom: 1.5rem;
+    }
+
+    .message-alert {
+        font-size: 1rem;
+        transition: opacity 0.3s ease;
+    }
+
+    /* Table Styles */
+    .table-container {
+        overflow-x: auto;
+    }
+
+    .module-table {
+        width: 100%;
+        background-color: #fff;
+        color: #333;
+        border-collapse: collapse;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+        .module-table th,
+        .module-table td {
+            padding: 1rem;
+            text-align: left;
+        }
+
+        .module-table th {
+            background-color: #fff;
+        }
+
+        .module-table tbody tr {
+            transition: background-color 0.3s ease;
+        }
+
+            .module-table tbody tr:hover {
+                background-color: #f9f9f9;
+            }
+
+    /* Button Styles */
+    .action-btn {
+        transition: background-color 0.3s ease, transform 0.3s ease;
+        border-radius: 5px;
+    }
+
+        .action-btn:hover {
+            background-color: #222;
+            transform: translateY(-2px);
+        }
+
+    .btn-primary {
+        background-color: #0066cc;
+        color: #fff;
+    }
+
+        .btn-primary:hover {
+            background-color: #005bb5;
+        }
+
+    /* Responsive Layout */
+    @@media (max-width: 768px) {
+        .module-table th, .module-table td {
+            font-size: 0.9rem;
+            padding: 0.8rem;
+        }
+
+        .page-title {
+            font-size: 1.8rem;
+        }
+    }
+</style>

@@ -1,0 +1,146 @@
+﻿@model Contract_Monthly_Claim_System.Models.EditViewModel
+
+<h1 class="page-title">Edit User Details</h1>
+
+<form asp-action="EditUser" method="post" class="module-form">
+    <input type="hidden" asp-for="Role" />
+
+    @if (Model.Lecturer != null)
+    {
+        <h3>Lecturer Details</h3>
+        <input type="hidden" asp-for="Lecturer.LecturerID" />
+        <div class="form-group">
+            <label asp-for="Lecturer.LecturerName"></label>
+            <input asp-for="Lecturer.LecturerName" class="form-control" required />
+            <span asp-validation-for="Lecturer.LecturerName" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Lecturer.LecturerSurname"></label>
+            <input asp-for="Lecturer.LecturerSurname" class="form-control" required />
+            <span asp-validation-for="Lecturer.LecturerSurname" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Lecturer.LecturerEmail"></label>
+            <input asp-for="Lecturer.LecturerEmail" class="form-control" required type="email" />
+            <span asp-validation-for="Lecturer.LecturerEmail" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Lecturer.LecturerPhone"></label>
+            <input asp-for="Lecturer.LecturerPhone" class="form-control" required type="tel" />
+            <span asp-validation-for="Lecturer.LecturerPhone" class="text-danger"></span>
+        </div>
+        <input type="hidden" asp-for="Lecturer.LecturerPassword" />
+    }
+    else if (Model.ProgrammeCoordinator != null)
+    {
+        <h3>Programme Coordinator Details</h3>
+        <input type="hidden" asp-for="ProgrammeCoordinator.CoordinatorID" />
+        <div class="form-group">
+            <label asp-for="ProgrammeCoordinator.CoordinatorName"></label>
+            <input asp-for="ProgrammeCoordinator.CoordinatorName" class="form-control" required />
+            <span asp-validation-for="ProgrammeCoordinator.CoordinatorName" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="ProgrammeCoordinator.CoordinatorSurname"></label>
+            <input asp-for="ProgrammeCoordinator.CoordinatorSurname" class="form-control" required />
+            <span asp-validation-for="ProgrammeCoordinator.CoordinatorSurname" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="ProgrammeCoordinator.CoordinatorEmail"></label>
+            <input asp-for="ProgrammeCoordinator.CoordinatorEmail" class="form-control" required type="email" />
+            <span asp-validation-for="ProgrammeCoordinator.CoordinatorEmail" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="ProgrammeCoordinator.CoordinatorPhone"></label>
+            <input asp-for="ProgrammeCoordinator.CoordinatorPhone" class="form-control" required type="tel" />
+            <span asp-validation-for="ProgrammeCoordinator.CoordinatorPhone" class="text-danger"></span>
+        </div>
+        <input type="hidden" asp-for="ProgrammeCoordinator.CoordinatorPassword" />
+    }
+    else if (Model.AcademicManager != null)
+    {
+        <h3>Academic Manager Details</h3>
+        <input type="hidden" asp-for="AcademicManager.ManagerID" />
+        <div class="form-group">
+            <label asp-for="AcademicManager.ManagerName"></label>
+            <input asp-for="AcademicManager.ManagerName" class="form-control" required />
+            <span asp-validation-for="AcademicManager.ManagerName" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="AcademicManager.ManagerSurname"></label>
+            <input asp-for="AcademicManager.ManagerSurname" class="form-control" required />
+            <span asp-validation-for="AcademicManager.ManagerSurname" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="AcademicManager.ManagerEmail"></label>
+            <input asp-for="AcademicManager.ManagerEmail" class="form-control" required type="email" />
+            <span asp-validation-for="AcademicManager.ManagerEmail" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="AcademicManager.ManagerPhone"></label>
+            <input asp-for="AcademicManager.ManagerPhone" class="form-control" required type="tel" />
+            <span asp-validation-for="AcademicManager.ManagerPhone" class="text-danger"></span>
+        </div>
+        <input type="hidden" asp-for="AcademicManager.ManagerPassword" />
+    }
+
+    <button type="submit" class="btn btn-primary edit-user-btn">Update User</button>
+</form>
+
+<style>
+    /* Page Title */
+    .page-title {
+        font-size: 2rem;
+        color: #333;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Form Group */
+    .form-group {
+        margin-bottom: 1rem;
+    }
+
+    /* Form Control */
+    .form-control {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        transition: border-color 0.3s ease;
+    }
+
+    .form-control:focus {
+        border-color: #0066cc;
+        outline: none;
+    }
+
+    /* Button */
+    .btn-primary {
+        background-color: #0066cc;
+        color: #fff;
+        border-radius: 5px;
+        transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        background-color: #005bb5;
+        transform: translateY(-2px);
+    }
+
+    .text-danger {
+        color: #cc0000;
+        font-size: 0.9rem;
+    }
+
+    /* Responsive Layout */
+    @@media (max-width: 768px) {
+        .page-title {
+            font-size: 1.8rem;
+        }
+
+        .btn-primary {
+            width: 100%;
+            margin-top: 1rem;
+        }
+    }
+</style>
