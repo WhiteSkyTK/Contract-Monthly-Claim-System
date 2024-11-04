@@ -17,7 +17,6 @@ using iTextSharp.text;
 using iTextSharp.text.pdf;
 using System.Globalization;
 
-
 namespace Contract_Monthly_Claim_System.Controllers
 {
     public class HomeController : Controller
@@ -30,6 +29,61 @@ namespace Contract_Monthly_Claim_System.Controllers
         {
             _logger = logger;
             _context = context;
+        }
+
+        public IActionResult ManageModules()
+        {
+            var modules = _context.Modules.ToList();
+            return View(modules);
+        }
+
+        public IActionResult AddModule()
+        {
+            return View();
+        }
+
+
+        [HttpPost]
+        public IActionResult AddModule(Module module)
+        {
+            if (ModelState.IsValid)
+            {
+                _context.Modules.Add(module);
+                _context.SaveChanges();
+                TempData["Message"] = "Module added successfully!";
+                return RedirectToAction("ManageModules");
+            }
+            return View("ManageModules", _context.Modules.ToList());
+        }
+
+        public IActionResult EditModule(string moduleCode)
+        {
+            var module = _context.Modules.Find(moduleCode);
+            if (module == null) return NotFound();
+            return View(module);
+        }
+
+        [HttpPost]
+        public IActionResult EditModule(Module module)
+        {
+            if (ModelState.IsValid)
+            {
+                _context.Modules.Update(module);
+                _context.SaveChanges();
+                TempData["Message"] = "Module updated successfully!";
+                return RedirectToAction("ManageModules");
+            }
+            return View(module);
+        }
+
+        public IActionResult DeleteModule(string moduleCode)
+        {
+            var module = _context.Modules.Find(moduleCode);
+            if (module == null) return NotFound();
+            _context.Modules.Remove(module);
+            _context.SaveChanges();
+            TempData["Message"] = "Module deleted successfully!";
+            return RedirectToAction("ManageModules");
         }
 
         public IActionResult Edit(int? userId)

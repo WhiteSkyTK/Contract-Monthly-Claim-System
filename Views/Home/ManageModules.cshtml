@@ -1,0 +1,142 @@
+﻿@model IEnumerable<Contract_Monthly_Claim_System.Models.Module>
+@{
+    ViewData["Title"] = "Manage Modules";
+}
+
+<h1 class="page-title">Manage Modules</h1>
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-success message-alert">@TempData["Message"]</div>
+}
+
+<div class="table-container">
+    <table class="table module-table">
+        <thead>
+            <tr>
+                <th>Module Code</th>
+                <th>Module Name</th>
+                <th>Description</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var module in Model)
+            {
+                <tr>
+                    <td>@module.ModuleCode</td>
+                    <td>@module.ModuleName</td>
+                    <td>@module.Description</td>
+                    <td>
+                        <a asp-action="EditModule" asp-route-moduleCode="@module.ModuleCode" class="btn btn-primary action-btn">Edit</a>
+                        <a asp-action="DeleteModule" asp-route-moduleCode="@module.ModuleCode" class="btn btn-danger action-btn">Delete</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<div class="add-module">
+    <a asp-action="AddModule" class="btn btn-success add-module-btn">Add New Module</a>
+</div>
+
+<style>
+    /* Global Styles */
+    .page-title {
+        font-size: 2rem;
+        color: #333;
+        margin-bottom: 1.5rem;
+    }
+
+    .message-alert {
+        font-size: 1rem;
+        transition: opacity 0.3s ease;
+    }
+
+    /* Table Styles */
+    .table-container {
+        overflow-x: auto;
+    }
+
+    .module-table {
+        width: 100%;
+        background-color: #fff;
+        color: #333;
+        border-collapse: collapse;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .module-table th,
+    .module-table td {
+        padding: 1rem;
+        text-align: left;
+    }
+
+    .module-table th {
+        background-color: #fff;
+    }
+
+    .module-table tbody tr {
+        transition: background-color 0.3s ease;
+    }
+
+    .module-table tbody tr:hover {
+        background-color: #fff;
+    }
+
+    /* Button Styles */
+    .action-btn, .add-module-btn {
+        transition: background-color 0.3s ease, transform 0.3s ease;
+        border-radius: 5px;
+    }
+
+    .action-btn:hover, .add-module-btn:hover {
+        background-color: #222;
+        transform: translateY(-2px);
+    }
+
+    .btn-primary {
+        background-color: #0066cc;
+        color: #fff;
+    }
+
+    .btn-primary:hover {
+        background-color: #005bb5;
+    }
+
+    .btn-danger {
+        background-color: #cc0000;
+        color: #fff;
+    }
+
+    .btn-danger:hover {
+        background-color: #b30000;
+    }
+
+    .btn-success {
+        background-color: #28a745;
+        color: #fff;
+    }
+
+    .btn-success:hover {
+        background-color: #218838;
+    }
+
+    /* Responsive Layout */
+    @@media (max-width: 768px) {
+        .module-table th, .module-table td {
+            font-size: 0.9rem;
+            padding: 0.8rem;
+        }
+
+        .page-title {
+            font-size: 1.8rem;
+        }
+
+        .add-module-btn {
+            width: 100%;
+        }
+    }
+</style>

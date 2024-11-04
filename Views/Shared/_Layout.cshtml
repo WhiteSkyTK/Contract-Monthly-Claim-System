@@ -277,7 +277,10 @@
                                 <a class="nav-link" asp-area="" asp-controller="Home" asp-action="RegisterM">Register Academic Manager</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Edit">Edit Details</a>
+                                <a class="nav-link" asp-area="" asp-controller="Home" asp-action="ManageModules">Manage Modules</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Edit">Manage Users</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" asp-controller="Home" asp-action="ManageClaims">Dashboard</a>
@@ -295,7 +298,9 @@
                             @if (User.Identity.IsAuthenticated)
                             {
                                 var nameParts = User.Identity.Name.Split(' ');
-                                var initials = nameParts.Length >= 2 ? $"{nameParts[0][0]}{nameParts[1][0]}" : $"{nameParts[0][0]}";
+                                var initials = nameParts.Length >= 2
+                                ? $"{nameParts[0][0].ToString().ToUpper()}{nameParts[1][0].ToString().ToUpper()}"
+                                : $"{nameParts[0][0].ToString().ToUpper()}";
 
                                 <a class="profile-circle dropdown-toggle" href="#" id="profileDropdown"
                                    role="button" data-bs-toggle="dropdown" aria-expanded="false" onclick="toggleDropdown(event)">
