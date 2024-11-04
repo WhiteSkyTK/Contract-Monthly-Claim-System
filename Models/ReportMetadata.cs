@@ -36,6 +36,5 @@ namespace Contract_Monthly_Claim_System.Models
         public ApprovalProcess ApprovalProcess { get; set; }
 
         public string GeneratedBy { get; set; } // The user who generated the report
-
     }
 }

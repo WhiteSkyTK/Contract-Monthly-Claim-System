@@ -1,4 +1,5 @@
-﻿@model IEnumerable<Contract_Monthly_Claim_System.Models.ReportMetadata>
+﻿@using System.Globalization
+@model IEnumerable<Contract_Monthly_Claim_System.Models.ReportMetadata>
 @{
     ViewData["Title"] = "View Invoices";
 }
@@ -17,27 +18,42 @@
             <div class="alert alert-danger fade-in">@TempData["ErrorMessage"]</div>
         }
 
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Invoice Name</th>
-                    <th>Date Generated</th>
-                    <th>Download</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var invoice in Model)
-                {
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
                     <tr>
-                        <td>@invoice.ReportName</td>
-                        <td>@invoice.DateGenerated.ToShortDateString()</td>
-                        <td>
-                            <a href="@Url.Action("DownloadInvoice", "Home", new { id = invoice.ReportId })" class="btn btn-primary animated-btn">Download</a>
-                        </td>
+                        <th>Invoice Name</th>
+                        <th>Lecturer</th>
+                        <th>Approved By</th> <!-- New column for the approver -->
+                        <th>Date Generated</th>
+                        <th>Total Amount</th>
+                        <th>Download</th>
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach (var invoice in Model)
+                    {
+                        <tr>
+                            <td>@invoice.ReportName</td>
+                            <td>@invoice.Lecturer?.LecturerName</td>
+                            <td>
+                                @{
+                                    var approvalProcess = invoice.ApprovalProcess;
+                                    var approverName = approvalProcess?.Coordinator?.CoordinatorName;
+                                    var managerName = approvalProcess?.Manager?.ManagerName;
+                                }
+                                @approverName / @managerName
+                            </td>
+                            <td>@invoice.DateGenerated.ToShortDateString()</td>
+                            <td>@invoice.TotalApprovedClaims.ToString("C", new CultureInfo("en-ZA"))</td>
+                            <td>
+                                <a href="@Url.Action("DownloadInvoice", "Home", new { id = invoice.ReportId })" class="btn btn-primary animated-btn">Download</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
 
         <div class="additional-info">
             <h2>Tools and Technologies</h2>
@@ -46,20 +62,12 @@
     </div>
 </div>
 
-@section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
-}
-
-<!-- Custom CSS for View Invoices page to match existing styles -->
 <style>
     @@keyframes fadeIn {
         from {
             opacity: 0;
             transform: translateY(-20px);
         }
-
         to {
             opacity: 1;
             transform: translateY(0);
@@ -95,30 +103,34 @@
         margin-bottom: 2rem;
     }
 
-    .table {
-        margin-top: 20px;
+    .table-responsive {
+        overflow-x: auto;
     }
 
-        .table th,
-        .table td {
-            text-align: center;
-        }
+    .table {
+        margin-top: 20px;
+        width: 100%;
+    }
+
+    .table th, .table td {
+        text-align: center;
+    }
 
     .additional-info {
         margin-top: 4rem;
         text-align: left;
     }
 
-        .additional-info h2 {
-            font-size: 1.75rem;
-            color: #333;
-            margin-bottom: 1rem;
-        }
+    .additional-info h2 {
+        font-size: 1.75rem;
+        color: #333;
+        margin-bottom: 1rem;
+    }
 
-        .additional-info p {
-            font-family: 'Open Sans', sans-serif;
-            color: #666666;
-        }
+    .additional-info p {
+        font-family: 'Open Sans', sans-serif;
+        color: #666666;
+    }
 
     .btn-primary {
         background-color: #DE1B38;
@@ -128,11 +140,39 @@
         font-size: 1rem;
         border-radius: 5px;
         cursor: pointer;
-        transition: background-color 0.3s ease, transform 0.2s ease; /* Added transform for hover effect */
+        transition: background-color 0.3s ease, transform 0.2s ease;
     }
 
     .animated-btn:hover {
         background-color: #87071a;
-        transform: translateY(-2px); /* Subtle lift on hover */
+        transform: translateY(-2px);
+    }
+
+    /* Responsive adjustments */
+    @@media (max-width: 768px) {
+        .page-title {
+            font-size: 2rem;
+        }
+
+        .page-subtitle {
+            font-size: 1.2rem;
+        }
+
+        .table-responsive {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-top: 10px;
+            padding: 5px;
+        }
+
+        .table th, .table td {
+            font-size: 0.9rem;
+            padding: 0.5rem;
+        }
+
+        .btn-primary {
+            font-size: 0.9rem;
+            padding: 0.6rem 1.5rem;
+        }
     }
 </style>
