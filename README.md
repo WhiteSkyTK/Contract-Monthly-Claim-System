@@ -1,5 +1,6 @@
-
 # Contract Monthly Claims System
+# Github Link()
+https://github.com/WhiteSkyTK/Contract-Monthly-Claim-System
 
 ## Overview
 The Contract Monthly Claims System is a web application that allows lecturers to submit claims for hours worked, program coordinators and academic managers to verify and reject claims, and users to track the status of their claims. The application features user authentication, a user-friendly interface, and real-time updates on claim status.
@@ -30,12 +31,22 @@ The Contract Monthly Claims System is a web application that allows lecturers to
     dotnet restore
     ```
 
-3. Create the database and apply migrations:
+3. Modify the `appsettings.json` file:
+    - Open the `appsettings.json` file located in the root of your project.
+    - Update the connection string under the `ConnectionStrings` section to point to your SQL Server database. Here’s an example:
+    ```json
+    "ConnectionStrings": {
+        "DefaultConnection": "Server=YOUR_SERVER_NAME;Database=YOUR_DATABASE_NAME;Trusted_Connection=True;MultipleActiveResultSets=true"
+    }
+    ```
+    - Replace `YOUR_SERVER_NAME` with the name of your SQL Server and `YOUR_DATABASE_NAME` with the name of the database you want to use.
+
+4. Create the database and apply migrations:
     ```bash
     dotnet ef database update
     ```
 
-4. Execute the SQL query to import modules into the database:
+5. Execute the SQL query to import modules into the database:
     ```sql
     INSERT INTO Modules (ModuleCode, ModuleName, Description) VALUES
     ('PROG6212', 'Programming 6212', 'Advanced programming techniques.'),
@@ -74,6 +85,16 @@ The Contract Monthly Claims System is a web application that allows lecturers to
     - **Academic Manager:** nogamenolifeshirosora1234@gmail.com / 12345678
 
 - After logging in, you can submit claims, verify claims, and track their statuses.
+
+## Class Structure
+- **ApplicationDbContext.cs:** This class manages the database interactions and does not require any modifications.
+- **User Class:** Manages user information, roles, and password hashing for secure storage.
+- **ApprovalProcess Class:** Handles details of claims approved or rejected, including feedback and timestamps.
+- **Academic Manager, Lecturer, Programme Coordinator Classes:** These classes contain user details for each respective role.
+- **Claims Class:** Stores claims submitted by lecturers.
+- **ClaimsModules Class:** Manages multiple modules selected by lecturers for their claims.
+- **HR Class:** Stores details about HR users.
+- **Other Classes:** Includes `EditViewModel`, `Module`, `SupportingDocument`, `ManageClaimsViewModel`, and `ReportMetadata` for managing various functionalities within the system.
 
 ## Endpoints
 - **Register Lecturer:** `/Home/Register`
